@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard | Velonic{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Tableau de bord</h4>
+                </div>
+                <div class="card-body">
+                    <h5>Bienvenue, {{ user.fullName }} !</h5>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Email :</strong> {{ user.email }}</p>
+                            <p><strong>Âge :</strong> {{ user.age }} ans</p>
+                            <p><strong>Rôle :</strong> 
+                                {% if 'ROLE_ADMIN' in user.roles %}
+                                    Administrateur
+                                {% elseif 'ROLE_PSYCHOLOGUE' in user.roles %}
+                                    Psychologue
+                                {% else %}
+                                    Patient
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <hr>
+                    <a href="{{ path('app_logout') }}" class="btn btn-danger">Déconnexion</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
