@@ -1,0 +1,101 @@
+
+{% extends 'dashboard.html.twig' %}
+
+{% block title %}Confirmer Reservation{% endblock %}
+
+{% block body %}
+
+<h2>Liste des réservations</h2>
+
+<table id="basic-datatable" class="table table-striped dt-responsive nowrap w-100">
+    <thead>
+        <tr>
+            <th>Patient</th>
+            <th>Date</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for reservation in reservations %}
+        <tr>
+            <td>{{ reservation.patient.email }}</td>
+            <td>{{ reservation.datePrevue|date('Y-m-d H:i') }}</td>
+
+            <td>
+                    <a href="{{ path('psychologue_reservation_edit', {'id': reservation.id}) }}" 
+                   class="btn btn-primary">
+                   Modifier
+                </a>
+                <form method="post" action="{{ path('reservation_cancel_psychologue', {'id': reservation.id}) }}" style="display:inline-block;">
+    <button class="btn btn-danger">Supprimer</button>
+</form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+ <script src="{{ asset('assets/js/vendor.min.js')}}"></script>
+
+    <script src="{{ asset('assets/vendor/datatables.net/js/jquery.dataTables.min.js')}}"></script>
+
+    <script src="{{ asset('assets/vendor/datatables.net-bs5/js/dataTables.bootstrap5.min.js')}}"></script>
+<script src="{{ asset('assets/vendor/datatables.net-responsive/js/dataTables.responsive.min.js')}}"></script>
+    <script src="{{ asset('assets/vendor/datatables.net-responsive-bs5/js/responsive.bootstrap5.min.js')}}"></script>
+    <script src="{{ asset('assets/vendor/datatables.net-fixedcolumns-bs5/js/fixedColumns.bootstrap5.min.js')}}"></script>
+    <script src="{{ asset('assets/vendor/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js')}}"></script>
+    <script src="{{ asset('assets/vendor/datatables.net-buttons/js/dataTables.buttons.min.js')}}"></script>
+    <script src="{{ asset('assets/vendor/datatables.net-buttons-bs5/js/buttons.bootstrap5.min.js')}}"></script>
+    <script src="{{ asset('assets/vendor/datatables.net-buttons/js/buttons.html5.min.js')}}"></script>
+    <script src="{{ asset('assets/vendor/datatables.net-buttons/js/buttons.flash.min.js')}}"></script>
+    <script src="{{ asset('assets/vendor/datatables.net-buttons/js/buttons.print.min.js')}}"></script>
+    <script src="{{ asset('assets/vendor/datatables.net-keytable/js/dataTables.keyTable.min.js')}}"></script>
+    <script src="{{ asset('assets/vendor/datatables.net-select/js/dataTables.select.min.js')}}"></script>
+<script>
+$(document).ready(function () {
+"use strict";
+
+$("#basic-datatable").DataTable({
+    keys: true,
+    language: {
+        search: "Rechercher :",
+        lengthMenu: "Afficher _MENU_ entrées",
+        info: "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
+        infoEmpty: "Affichage de 0 à 0 sur 0 entrées",
+        infoFiltered: "(filtré de _MAX_ entrées au total)",
+        zeroRecords: "Aucun enregistrement trouvé",
+        paginate: {
+            previous: "<i class='ri-arrow-left-s-line'></i>",
+            next: "<i class='ri-arrow-right-s-line'></i>"
+        }
+    },
+    drawCallback: function () {
+        $(".dataTables_paginate > .pagination").addClass("pagination-rounded");
+    }
+});
+
+var a = $("#datatable-buttons").DataTable({
+    lengthChange: false,
+    buttons: ["copy", "print"],
+    language: {
+        search: "Rechercher :",
+        lengthMenu: "Afficher _MENU_ entrées",
+        info: "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
+        infoEmpty: "Affichage de 0 à 0 sur 0 entrées",
+        infoFiltered: "(filtré de _MAX_ entrées au total)",
+        zeroRecords: "Aucun enregistrement trouvé",
+        paginate: {
+            previous: "<i class='ri-arrow-left-s-line'></i>",
+            next: "<i class='ri-arrow-right-s-line'></i>"
+        }
+    },
+    drawCallback: function () {
+        $(".dataTables_paginate > .pagination").addClass("pagination-rounded");
+    }
+});
+
+});
+</script>
+{% endblock %}
