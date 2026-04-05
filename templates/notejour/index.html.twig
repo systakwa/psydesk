@@ -1,0 +1,43 @@
+
+
+{% block title %}Notejour index{% endblock %}
+
+{% block body %}
+    <h1>Notejour index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>TexteNote</th>
+                <th>Date</th>
+                <th>Evaluation</th>
+                <th>Satisfer</th>
+                <th>Created_at</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for notejour in notejours %}
+            <tr>
+                <td>{{ notejour.id }}</td>
+                <td>{{ notejour.texteNote }}</td>
+                <td>{{ notejour.date ? notejour.date|date('Y-m-d') : '' }}</td>
+                <td>{{ notejour.evaluation ? 'Yes' : 'No' }}</td>
+                <td>{{ notejour.satisfer }}</td>
+                <td>{{ notejour.createdAt ? notejour.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_notejour_show', {'id': notejour.id}) }}">show</a>
+                    <a href="{{ path('app_notejour_edit', {'id': notejour.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_notejour_new') }}">Create new</a>
+{% endblock %}
