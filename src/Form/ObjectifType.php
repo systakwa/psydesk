@@ -3,8 +3,6 @@
 namespace App\Form;
 
 use App\Entity\Objectif;
-use App\Entity\Users;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -31,10 +29,8 @@ class ObjectifType extends AbstractType
             ->add('nb_jour', IntegerType::class)
             ->add('created_at', DateType::class, ['widget' => 'single_text'])
             ->add('etat', CheckboxType::class, ['required' => false])
-            ->add('idPatient', EntityType::class, [
-                'class' => Users::class,
-                'choice_label' => 'id',
-            ]);
+            // Le champ idPatient a été supprimé
+        ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

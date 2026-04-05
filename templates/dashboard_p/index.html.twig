@@ -9,6 +9,7 @@
     <!-- Favicon -->
 <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <!-- Google fonts -->
+    <a class="navbar-brand"><span class="fw-bolder text-primary">Bonjour, {{ nom }}</span></a>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@100;200;300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet" />
@@ -27,8 +28,8 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0 small fw-bolder">
                         <li class="nav-item"><a class="nav-link" >Home</a></li>
-                        <li class="nav-item"><a class="nav-link" >Resume</a></li>
-                        <li class="nav-item"><a class="nav-link" >Projects</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ path('app_objectif_index') }}">Mes Objectifs</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ path('app_reclamation_index') }}" >Mes reclamations</a></li>
                         <li class="nav-item"><a class="nav-link">Contact</a></li>
                     </ul>
                 </div>

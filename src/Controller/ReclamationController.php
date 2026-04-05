@@ -17,15 +17,40 @@ final class ReclamationController extends AbstractController
     #[Route(name: 'app_reclamation_index', methods: ['GET'])]
     public function index(ReclamationRepository $reclamationRepository): Response
     {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+        // Récupérer uniquement les réclamations de l'utilisateur connecté
+        $reclamations = $reclamationRepository->findBy(['idPatient' => $user]);
+
         return $this->render('reclamation/index.html.twig', [
-            'reclamations' => $reclamationRepository->findAll(),
+            'reclamations' => $reclamations,
         ]);
     }
+
+    #[Route('/admin/all', name: 'app_reclamation_admin_all', methods: ['GET'])]
+    public function indexAll(ReclamationRepository $reclamationRepository): Response
+    {
+        $reclamations = $reclamationRepository->findAll();
+
+        return $this->render('Objectif_reclamtion_back/reclamation.html.twig', [
+            'reclamations' => $reclamations,
+        ]);
+    }
+
 
     #[Route('/new', name: 'app_reclamation_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
         $reclamation = new Reclamation();
+        $reclamation->setIdPatient($user);  // Association automatique
+
         $form = $this->createForm(ReclamationType::class, $reclamation);
         $form->handleRequest($request);
 
@@ -45,6 +70,10 @@ final class ReclamationController extends AbstractController
     #[Route('/{id}', name: 'app_reclamation_show', methods: ['GET'])]
     public function show(Reclamation $reclamation): Response
     {
+        $user = $this->getUser();
+        if (!$user || $reclamation->getIdPatient() !== $user) {
+            throw $this->createAccessDeniedException('Accès non autorisé.');
+        }
         return $this->render('reclamation/show.html.twig', [
             'reclamation' => $reclamation,
         ]);
@@ -53,6 +82,11 @@ final class ReclamationController extends AbstractController
     #[Route('/{id}/edit', name: 'app_reclamation_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Reclamation $reclamation, EntityManagerInterface $entityManager): Response
     {
+        $user = $this->getUser();
+        if (!$user || $reclamation->getIdPatient() !== $user) {
+            throw $this->createAccessDeniedException('Accès non autorisé.');
+        }
+
         $form = $this->createForm(ReclamationType::class, $reclamation);
         $form->handleRequest($request);
 
@@ -71,6 +105,11 @@ final class ReclamationController extends AbstractController
     #[Route('/{id}', name: 'app_reclamation_delete', methods: ['POST'])]
     public function delete(Request $request, Reclamation $reclamation, EntityManagerInterface $entityManager): Response
     {
+        $user = $this->getUser();
+        if (!$user || $reclamation->getIdPatient() !== $user) {
+            throw $this->createAccessDeniedException('Accès non autorisé.');
+        }
+
         if ($this->isCsrfTokenValid('delete'.$reclamation->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($reclamation);
             $entityManager->flush();

@@ -2,25 +2,32 @@
     {{ form_errors(form) }}
 
     <div class="form-group">
-        {{ form_label(form.description) }}
-        {{ form_widget(form.description) }}
-        {{ form_errors(form.description) }}
-        <small class="form-text text-muted">Maximum 100 caractères.</small>
+        {{ form_label(form.texteNote) }}
+        {{ form_widget(form.texteNote) }}
+        {{ form_errors(form.texteNote) }}
+        <small class="form-text text-muted">Minimum 5 caractères.</small>
     </div>
 
     <div class="form-group">
-        {{ form_label(form.datefin) }}
-        {{ form_widget(form.datefin) }}
-        {{ form_errors(form.datefin) }}
-        <small class="form-text text-muted">Doit être supérieure ou égale à aujourd'hui.</small>
+        {{ form_label(form.date) }}
+        {{ form_widget(form.date) }}
+        {{ form_errors(form.date) }}
+        <small class="form-text text-muted">Date de la note (ne peut pas être dans le futur).</small>
     </div>
 
-    {{ form_row(form.status) }}
-    {{ form_row(form.nb_note) }}
-    {{ form_row(form.nb_jour) }}
-    {{ form_row(form.created_at) }}
-    {{ form_row(form.etat) }}
-    {{ form_row(form.idPatient) }}
+    <div class="form-group">
+        {{ form_label(form.evaluation) }}
+        {{ form_widget(form.evaluation) }}
+        {{ form_errors(form.evaluation) }}
+    </div>
 
-    <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
+    <div class="form-group">
+        {{ form_label(form.satisfer) }}
+        {{ form_widget(form.satisfer) }}
+        {{ form_errors(form.satisfer) }}
+        <small class="form-text text-muted">Entre 0 et 10.</small>
+    </div>
+
+   
+    <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
 {{ form_end(form) }}

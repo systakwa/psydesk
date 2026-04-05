@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Notejour;
+use App\Entity\Objectif;
 use App\Form\NotejourType;
 use App\Repository\NotejourRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,15 +18,41 @@ final class NotejourController extends AbstractController
     #[Route(name: 'app_notejour_index', methods: ['GET'])]
     public function index(NotejourRepository $notejourRepository): Response
     {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+        // Récupérer les notes des objectifs de l'utilisateur
+        $notejours = $notejourRepository->createQueryBuilder('n')
+            ->join('n.idObjectif', 'o')
+            ->where('o.idPatient = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+
         return $this->render('notejour/index.html.twig', [
-            'notejours' => $notejourRepository->findAll(),
+            'notejours' => $notejours,
         ]);
     }
 
-    #[Route('/new', name: 'app_notejour_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/new/{objectif_id?}', name: 'app_notejour_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager, ?int $objectif_id = null): Response
     {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
         $notejour = new Notejour();
+
+        if ($objectif_id) {
+            $objectif = $entityManager->getRepository(Objectif::class)->find($objectif_id);
+            if (!$objectif || $objectif->getIdPatient() !== $user) {
+                throw $this->createAccessDeniedException('Objectif invalide ou non autorisé.');
+            }
+            $notejour->setIdObjectif($objectif);
+        }
+
         $form = $this->createForm(NotejourType::class, $notejour);
         $form->handleRequest($request);
 
@@ -33,7 +60,7 @@ final class NotejourController extends AbstractController
             $entityManager->persist($notejour);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_notejour_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_objectif_show', ['id' => $notejour->getIdObjectif()->getId()]);
         }
 
         return $this->render('notejour/new.html.twig', [
@@ -45,6 +72,10 @@ final class NotejourController extends AbstractController
     #[Route('/{id}', name: 'app_notejour_show', methods: ['GET'])]
     public function show(Notejour $notejour): Response
     {
+        $user = $this->getUser();
+        if (!$user || $notejour->getIdObjectif()->getIdPatient() !== $user) {
+            throw $this->createAccessDeniedException('Accès non autorisé.');
+        }
         return $this->render('notejour/show.html.twig', [
             'notejour' => $notejour,
         ]);
@@ -53,12 +84,16 @@ final class NotejourController extends AbstractController
     #[Route('/{id}/edit', name: 'app_notejour_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Notejour $notejour, EntityManagerInterface $entityManager): Response
     {
+        $user = $this->getUser();
+        if (!$user || $notejour->getIdObjectif()->getIdPatient() !== $user) {
+            throw $this->createAccessDeniedException('Accès non autorisé.');
+        }
+
         $form = $this->createForm(NotejourType::class, $notejour);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
-
             return $this->redirectToRoute('app_notejour_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -71,6 +106,11 @@ final class NotejourController extends AbstractController
     #[Route('/{id}', name: 'app_notejour_delete', methods: ['POST'])]
     public function delete(Request $request, Notejour $notejour, EntityManagerInterface $entityManager): Response
     {
+        $user = $this->getUser();
+        if (!$user || $notejour->getIdObjectif()->getIdPatient() !== $user) {
+            throw $this->createAccessDeniedException('Accès non autorisé.');
+        }
+
         if ($this->isCsrfTokenValid('delete'.$notejour->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($notejour);
             $entityManager->flush();

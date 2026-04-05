@@ -14,12 +14,21 @@ class Reclamation
     #[ORM\Column]
     private ?int $id = null;
 
+    
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: "La description est obligatoire.")]
+    #[Assert\Length(
+        min: 10,
+        minMessage: "La description doit contenir au moins {{ limit }} caractères.",
+        max: 255,
+        maxMessage: "La description ne doit pas dépasser {{ limit }} caractères."
+    )]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Assert\NotBlank(message: "La date est obligatoire.")]
     private ?\DateTime $date = null;
-
+    
     // Correction : targetEntity = Users::class (majuscule) + JoinColumn avec le vrai nom de la colonne
     #[ORM\ManyToOne(targetEntity: Users::class, inversedBy: 'reclamations')]
     #[ORM\JoinColumn(name: 'idPatient', referencedColumnName: 'id')]  // ← adaptez 'id_patient' si nécessaire

@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: NotejourRepository::class)]
 class Notejour
 {
+    
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -19,21 +20,36 @@ class Notejour
     private ?Objectif $idObjectif = null;
 
     #[ORM\Column(type: Types::TEXT, name: 'texteNote')]
+    #[Assert\NotBlank(message: "Le texte de la note est obligatoire.")]
+    #[Assert\Length(
+        min: 5,
+        minMessage: "Le texte doit contenir au moins {{ limit }} caractères.",
+        max: 2000,
+        maxMessage: "Le texte ne doit pas dépasser {{ limit }} caractères."
+    )]
     private ?string $texteNote = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Assert\NotBlank(message: "La date est obligatoire.")]
+    #[Assert\LessThanOrEqual(
+        value: "today",
+        message: "La date ne peut pas être dans le futur."
+    )]
     private ?\DateTime $date = null;
 
     #[ORM\Column(nullable: true, options: ['default' => 0])]
     private ?bool $evaluation = null;
 
-    
     #[ORM\Column(nullable: true, options: ['default' => 0])]
+    #[Assert\Range(
+        min: 0,
+        max: 10,
+        notInRangeMessage: "La note de satisfaction doit être comprise entre {{ min }} et {{ max }}."
+    )]
     private ?int $satisfer = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]
     private ?\DateTimeImmutable $created_at = null;
-
     public function getId(): ?int
     {
         return $this->id;

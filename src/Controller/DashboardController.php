@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Controller;
+use App\Repository\ReclamationRepository;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,12 +16,16 @@ class DashboardController extends AbstractController
     }
 
     #[Route('/dashboard/reclamation', name: 'app_reclamation')]
-    public function reclamation(): Response
+     #[Route('/admin/all', name: 'app_reclamation_admin_all', methods: ['GET'])]
+    public function indexAll(ReclamationRepository $reclamationRepository): Response
     {
-        return $this->render('Objectif_reclamtion_back/reclamation.html.twig');
-    }
+        $reclamations = $reclamationRepository->findAll();
 
-     #[Route('/dashboard/admin', name: 'app_dashboard_admin')]
+        return $this->render('Objectif_reclamtion_back/reclamation.html.twig', [
+            'reclamations' => $reclamations,
+        ]);
+    }
+    #[Route('/dashboard/admin', name: 'app_dashboard_admin')]
     public function adminDashboard(): Response
     {
         return $this->render('dashboard/index.html.twig');
@@ -35,8 +40,11 @@ class DashboardController extends AbstractController
     #[Route('/dashboard/patient', name: 'app_dashboard_patient')]
     public function patientDashboard(): Response
     {
-        return $this->render('dashboard_p/index.html.twig');
+        $user = $this->getUser(); // Récupère l'utilisateur connecté
+        $nomComplet = $user ? $user->getPrenom() . ' ' . $user->getNom() : 'Invité';
+        
+        return $this->render('dashboard_p/index.html.twig', [
+            'nom' => $nomComplet,
+        ]);
     }
-    
-    // Ajoutez ici les routes pour les autres pages : app_buttons, app_dropdowns, etc.
 }
