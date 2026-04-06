@@ -1,0 +1,12 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block body %}
+<h2>Ajouter un événement</h2>
+
+{{ form_start(form) }}
+    {{ form_widget(form) }}
+
+    <button class="btn btn-success">Ajouter</button>
+{{ form_end(form) }}
+
+{% endblock %}

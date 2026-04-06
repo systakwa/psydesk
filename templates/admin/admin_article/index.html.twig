@@ -1,0 +1,42 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block body %}
+
+<h2>Articles</h2>
+
+<form method="get">
+    <input name="q" placeholder="Recherche">
+    <select name="status">
+        <option value="">Tous</option>
+        <option value="valide">Validé</option>
+        <option value="refuse">Refusé</option>
+    </select>
+    <button>Filtrer</button>
+</form>
+
+<table class="table">
+<tr>
+    <th>ID</th>
+    <th>Contenu</th>
+    <th>Image</th>
+    <th>Statut</th>
+</tr>
+
+{% for article in articles %}
+<tr>
+    <td>{{ article.id }}</td>
+    <td>{{ article.contenu }}</td>
+    <td>
+        {% if article.image %}
+            <img src="{{ asset('uploads/' ~ article.image) }}" width="80">
+        {% endif %}
+    </td>
+    <td>{{ article.statut }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+<a href="{{ path('admin_article_new') }}">Ajouter</a>
+
+{% endblock %}

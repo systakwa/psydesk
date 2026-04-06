@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Admin{% endblock %}</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+</head>
+
+<body>
+
+<div class="container-scroller">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar sidebar-offcanvas">
+        <ul class="nav">
+
+            <li class="nav-item menu-items">
+                <a class="nav-link" href="{{ path('admin_event_index') }}">
+                    <span class="menu-title">Events</span>
+                </a>
+            </li>
+
+        </ul>
+    </nav>
+
+    <!-- MAIN -->
+    <div class="container-fluid page-body-wrapper">
+
+        <!-- NAVBAR -->
+        <nav class="navbar p-0 fixed-top d-flex flex-row">
+            <div class="navbar-menu-wrapper flex-grow d-flex align-items-stretch">
+                <h4 class="text-white m-3">Admin Panel</h4>
+            </div>
+        </nav>
+
+        <!-- CONTENT -->
+        <div class="main-panel">
+            <div class="content-wrapper">
+
+                {% block body %}{% endblock %}
+
+            </div>
+
+            <!-- FOOTER -->
+            <footer class="footer text-center">
+                <span>© 2026 Admin</span>
+            </footer>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- JS -->
+<script src="{{ asset('assets/js/misc.js') }}"></script>
+
+</body>
+</html>

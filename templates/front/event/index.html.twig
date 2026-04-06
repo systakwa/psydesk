@@ -1,0 +1,86 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Evenement index{% endblock %}
+
+{% block body %}
+
+<!-- SECTION EVENTS -->
+<section class="bg-light py-5">
+    <div class="container px-5">
+
+        <!-- TITLE -->
+        <div class="text-center mb-5">
+            <h1 class="fw-bolder">Nos événements</h1>
+            <p class="lead text-muted">Découvrez et participez à nos événements</p>
+        </div>
+
+        <!-- FLASH MESSAGES -->
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+
+        <!-- SEARCH -->
+        <form method="get" class="mb-4">
+            <input type="text" name="q" class="form-control" placeholder="Rechercher événement...">
+        </form>
+
+        <!-- CARDS -->
+        <div class="row g-4">
+
+        {% for evenement in evenements %}
+            <div class="col-md-6 col-lg-4">
+
+                <div class="card h-100 shadow-sm">
+
+                    <div class="card-body">
+
+                        <!-- TITRE -->
+                        <h5 class="card-title fw-bold">
+                            {{ evenement.titre }}
+                        </h5>
+
+                        <!-- DESCRIPTION -->
+                        <p class="card-text text-muted">
+                            {{ evenement.description|length > 100 
+                                ? evenement.description|slice(0, 100) ~ '...' 
+                                : evenement.description 
+                            }}
+                        </p>
+
+                        <!-- INFOS -->
+                        <ul class="list-unstyled small">
+                            <li><strong>Date:</strong> {{ evenement.dateEvent ? evenement.dateEvent|date('Y-m-d') : '' }}</li>
+                            <li><strong>Lieu:</strong> {{ evenement.lieu }}</li>
+                            <li><strong>Type:</strong> {{ evenement.type }}</li>
+                        </ul>
+
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="card-footer text-center">
+                        <a href="{{ path('participer_event', {'id': evenement.id}) }}"
+                           class="btn btn-success btn-sm w-100">
+                            Participer
+                        </a>
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% else %}
+            <div class="col-12 text-center">
+                <p>Aucun événement</p>
+            </div>
+        {% endfor %}
+
+        </div> {# END ROW #}
+
+    </div>
+</section>
+
+{% endblock %}

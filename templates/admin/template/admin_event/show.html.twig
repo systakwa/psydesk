@@ -1,0 +1,12 @@
+{% extends 'base.admin.html.twig' %}
+
+{% block body %}
+
+<h2>{{ evenement.titre }}</h2>
+
+<p>{{ evenement.description }}</p>
+<p>{{ evenement.lieu }}</p>
+
+<a href="{{ path('admin_event_index') }}">Back</a>
+
+{% endblock %}

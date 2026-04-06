@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+<h2>Publier un article</h2>
+
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+    {{ form_errors(form) }}
+
+    <div class="mb-3">
+        {{ form_label(form.contenu) }}
+        {{ form_widget(form.contenu, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.contenu) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.imageFile) }}
+        {{ form_widget(form.imageFile, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.imageFile) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.video_url) }}
+        {{ form_widget(form.video_url, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.video_url) }}
+    </div>
+
+    <div class="mb-3">
+        {{ form_label(form.user_email) }}
+        {{ form_widget(form.user_email, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.user_email) }}
+    </div>
+
+    <button class="btn btn-success">Publier</button>
+
+{{ form_end(form) }}
+
+{% endblock %}

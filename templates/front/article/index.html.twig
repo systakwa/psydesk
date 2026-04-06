@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+<h2>Articles validés</h2>
+
+{% for article in articles %}
+<div class="card mb-3">
+    <div class="card-body">
+
+        <p>{{ article.contenu }}</p>
+
+        {% if article.image %}
+            <img src="{{ asset('uploads/' ~ article.image) }}" width="200">
+        {% endif %}
+
+        <small>{{ article.datePost|date('Y-m-d') }}</small>
+
+    </div>
+</div>
+{% else %}
+<p>Aucun article validé</p>
+{% endfor %}
+
+<a href="{{ path('front_article_front_article_new') }}" class="btn btn-primary">
+    Publier un article
+</a>
+
+{% endblock %}
