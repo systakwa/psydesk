@@ -11,6 +11,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
+
 
 #[Route('/notejour')]
 final class NotejourController extends AbstractController
@@ -35,7 +37,25 @@ final class NotejourController extends AbstractController
         ]);
     }
 
-    #[Route('/new/{objectif_id?}', name: 'app_notejour_new', methods: ['GET', 'POST'])]
+#[Route('/objectif/{objectif_id}', name: 'app_notejour_by_objectif', methods: ['GET'])]
+public function indexByObjectif(int $objectif_id, EntityManagerInterface $entityManager): Response
+{
+    $user = $this->getUser();
+    if (!$user) {
+        return $this->redirectToRoute('app_login');
+    }
+    $objectif = $entityManager->getRepository(Objectif::class)->find($objectif_id);
+    if (!$objectif || $objectif->getIdPatient() !== $user) {
+        throw $this->createAccessDeniedException('Objectif invalide ou non autorisé.');
+    }
+    $notejours = $objectif->getNotejours(); // collection des notes
+    return $this->render('notejour/index.html.twig', [
+        'notejours' => $notejours,
+        'objectif' => $objectif,
+    ]);
+}
+
+   /* #[Route('/new/{objectif_id?}', name: 'app_notejour_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, ?int $objectif_id = null): Response
     {
         $user = $this->getUser();
@@ -67,19 +87,75 @@ final class NotejourController extends AbstractController
             'notejour' => $notejour,
             'form' => $form,
         ]);
+    }*/
+#[Route('/new-modal/{objectif_id}', name: 'app_notejour_new_modal', methods: ['GET'])]
+public function newModal(int $objectif_id, EntityManagerInterface $entityManager): Response
+{
+    $user = $this->getUser();
+    if (!$user) {
+        return $this->redirectToRoute('app_login');
+    }
+    $objectif = $entityManager->getRepository(Objectif::class)->find($objectif_id);
+    if (!$objectif || $objectif->getIdPatient() !== $user) {
+        throw $this->createAccessDeniedException('Objectif invalide ou non autorisé.');
+    }
+    $notejour = new Notejour();
+    $notejour->setIdObjectif($objectif);
+    $form = $this->createForm(NotejourType::class, $notejour);
+    return $this->render('notejour/_form_modal.html.twig', [
+        'form' => $form->createView(),
+        'objectif_id' => $objectif_id, // ← passe l'ID à la vue
+    ]);
+}
+
+#[Route('/new', name: 'app_notejour_new', methods: ['POST'])]
+public function new(Request $request, EntityManagerInterface $entityManager): Response
+{
+    $user = $this->getUser();
+    if (!$user) {
+        return $this->redirectToRoute('app_login');
     }
 
-    #[Route('/{id}', name: 'app_notejour_show', methods: ['GET'])]
-    public function show(Notejour $notejour): Response
-    {
-        $user = $this->getUser();
-        if (!$user || $notejour->getIdObjectif()->getIdPatient() !== $user) {
-            throw $this->createAccessDeniedException('Accès non autorisé.');
+    $notejour = new Notejour();
+
+    // Récupérer l'ID de l'objectif depuis le champ caché
+    $objectifId = $request->request->get('objectif_id');
+    if ($objectifId) {
+        $objectif = $entityManager->getRepository(Objectif::class)->find($objectifId);
+        if (!$objectif || $objectif->getIdPatient() !== $user) {
+            throw $this->createAccessDeniedException('Objectif invalide ou non autorisé.');
         }
-        return $this->render('notejour/show.html.twig', [
-            'notejour' => $notejour,
-        ]);
+        $notejour->setIdObjectif($objectif);
     }
+
+    $form = $this->createForm(NotejourType::class, $notejour);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $entityManager->persist($notejour);
+        $entityManager->flush();
+
+        if ($request->isXmlHttpRequest()) {
+            return new JsonResponse(['success' => true]);
+        }
+        return $this->redirectToRoute('app_objectif_show', ['id' => $notejour->getIdObjectif()->getId()]);
+    }
+
+    if ($request->isXmlHttpRequest()) {
+        $html = $this->renderView('notejour/_form_modal.html.twig', [
+            'form' => $form->createView(),
+            'objectif_id' => $objectifId,
+        ]);
+        return new JsonResponse(['success' => false, 'html' => $html]);
+    }
+
+    return $this->render('notejour/new.html.twig', [
+        'notejour' => $notejour,
+        'form' => $form,
+    ]);
+}
+        
+
 
     #[Route('/{id}/edit', name: 'app_notejour_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Notejour $notejour, EntityManagerInterface $entityManager): Response

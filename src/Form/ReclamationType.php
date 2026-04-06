@@ -18,9 +18,7 @@ class ReclamationType extends AbstractType
                 'attr' => ['minlength' => 10],
                 'help' => 'Minimum 10 caractères',
             ])
-            ->add('date', DateType::class, [
-                'widget' => 'single_text',
-            ])
+           
         ;
     }
 

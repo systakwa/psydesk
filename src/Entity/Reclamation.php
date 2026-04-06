@@ -34,6 +34,11 @@ class Reclamation
     #[ORM\JoinColumn(name: 'idPatient', referencedColumnName: 'id')]  // ← adaptez 'id_patient' si nécessaire
     private ?Users $idPatient = null;
 
+     public function __construct()
+{
+     $this->date = new \DateTime(); 
+}
+
     public function getId(): ?int
     {
         return $this->id;

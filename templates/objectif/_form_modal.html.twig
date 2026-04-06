@@ -1,0 +1,19 @@
+{# templates/objectif/_form_modal.html.twig #}
+{{ form_start(form, {'attr': {'id': 'objectif-form', 'data-action': 'submit'}}) }}
+    <div class="mb-3">
+        {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'placeholder': 'Décrivez l\'objectif du patient'}}) }}
+        {{ form_errors(form.description) }}
+    </div>
+    <div class="mb-3">
+        {{ form_label(form.datefin, 'Date de fin', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.datefin, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.datefin) }}
+    </div>
+    <div class="mb-3 form-check">
+        {{ form_widget(form.status, {'attr': {'class': 'form-check-input'}}) }}
+        {{ form_label(form.status, 'Visible au psychologue', {'label_attr': {'class': 'form-check-label'}}) }}
+        {{ form_errors(form.status) }}
+    </div>
+    <button type="submit" class="btn btn-primary">Ajouter Objectif</button>
+{{ form_end(form) }}

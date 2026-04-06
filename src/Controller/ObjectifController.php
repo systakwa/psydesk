@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 #[Route('/objectif')]
 final class ObjectifController extends AbstractController
@@ -28,6 +29,7 @@ final class ObjectifController extends AbstractController
         ]);
     }
 
+    /*
     #[Route('/new', name: 'app_objectif_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -53,7 +55,63 @@ final class ObjectifController extends AbstractController
             'objectif' => $objectif,
             'form' => $form,
         ]);
+    }*/
+        #[Route('/new-modal', name: 'app_objectif_new_modal', methods: ['GET'])]
+public function newModal(): Response
+{
+    $user = $this->getUser();
+    if (!$user) {
+        return $this->redirectToRoute('app_login');
     }
+
+    $objectif = new Objectif();
+    $objectif->setIdPatient($user);
+    $form = $this->createForm(ObjectifType::class, $objectif);
+
+    return $this->render('objectif/_form_modal.html.twig', [
+        'form' => $form->createView(),
+    ]);
+}
+
+#[Route('/new', name: 'app_objectif_new', methods: ['POST'])]
+public function new(Request $request, EntityManagerInterface $entityManager): Response
+{
+    $user = $this->getUser();
+    if (!$user) {
+        return $this->redirectToRoute('app_login');
+    }
+
+    $objectif = new Objectif();
+    $objectif->setIdPatient($user);
+
+    $form = $this->createForm(ObjectifType::class, $objectif);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $entityManager->persist($objectif);
+        $entityManager->flush();
+
+        if ($request->isXmlHttpRequest()) {
+            // Retourner un JSON pour la soumission AJAX
+            return new JsonResponse(['success' => true, 'id' => $objectif->getId()]);
+        }
+
+        return $this->redirectToRoute('app_objectif_index');
+    }
+
+    if ($request->isXmlHttpRequest()) {
+        // Rendre le formulaire avec les erreurs
+        $html = $this->renderView('objectif/_form_modal.html.twig', [
+            'form' => $form->createView(),
+        ]);
+        return new JsonResponse(['success' => false, 'html' => $html]);
+    }
+
+    return $this->render('objectif/new.html.twig', [
+        'objectif' => $objectif,
+        'form' => $form,
+    ]);
+}
 
     #[Route('/{id}', name: 'app_objectif_show', methods: ['GET'])]
     public function show(Objectif $objectif): Response

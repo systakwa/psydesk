@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 #[Route('/reclamation')]
 final class ReclamationController extends AbstractController
@@ -40,7 +41,7 @@ final class ReclamationController extends AbstractController
     }
 
 
-    #[Route('/new', name: 'app_reclamation_new', methods: ['GET', 'POST'])]
+   /* #[Route('/new', name: 'app_reclamation_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
@@ -65,7 +66,57 @@ final class ReclamationController extends AbstractController
             'reclamation' => $reclamation,
             'form' => $form,
         ]);
+    }*/
+        #[Route('/new-modal', name: 'app_reclamation_new_modal', methods: ['GET'])]
+    public function newModal(): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+        $reclamation = new Reclamation();
+        $reclamation->setIdPatient($user);
+        $form = $this->createForm(ReclamationType::class, $reclamation);
+        return $this->render('reclamation/_form_modal.html.twig', [
+            'form' => $form->createView(),
+        ]);
     }
+
+    #[Route('/new', name: 'app_reclamation_new', methods: ['POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $reclamation = new Reclamation();
+        $reclamation->setIdPatient($user);
+
+        $form = $this->createForm(ReclamationType::class, $reclamation);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($reclamation);
+            $entityManager->flush();
+
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(['success' => true]);
+            }
+            return $this->redirectToRoute('app_reclamation_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        if ($request->isXmlHttpRequest()) {
+            $html = $this->renderView('reclamation/_form_modal.html.twig', ['form' => $form->createView()]);
+            return new JsonResponse(['success' => false, 'html' => $html]);
+        }
+
+        return $this->render('reclamation/new.html.twig', [
+            'reclamation' => $reclamation,
+            'form' => $form,
+        ]);
+    }
+
 
     #[Route('/{id}', name: 'app_reclamation_show', methods: ['GET'])]
     public function show(Reclamation $reclamation): Response

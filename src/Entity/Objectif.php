@@ -61,6 +61,7 @@ class Objectif
     public function __construct()
     {
         $this->notejours = new ArrayCollection();
+         $this->created_at = new \DateTime(); // add this
     }
 
     public function getId(): ?int

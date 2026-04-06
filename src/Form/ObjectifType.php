@@ -25,11 +25,7 @@ class ObjectifType extends AbstractType
                 'attr' => ['min' => (new \DateTime())->format('Y-m-d')],
             ])
             ->add('status', CheckboxType::class, ['required' => false])
-            ->add('nb_note', IntegerType::class)
-            ->add('nb_jour', IntegerType::class)
-            ->add('created_at', DateType::class, ['widget' => 'single_text'])
-            ->add('etat', CheckboxType::class, ['required' => false])
-            // Le champ idPatient a été supprimé
+        
         ;
     }
 
