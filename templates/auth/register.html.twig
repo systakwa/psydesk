@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription | PSYDESK</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .register-card {
+            display: flex;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 1000px;
+            width: 100%;
+            animation: fadeInUp 0.6s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .register-left {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 50px;
+            color: white;
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-align: center;
+        }
+        .logo-center { margin-bottom: 30px; }
+        .logo-img { max-width: 180px; height: auto; display: inline-block; }
+        .register-left h2 { font-size: 2rem; font-weight: bold; margin-bottom: 20px; }
+        .register-left p { opacity: 0.9; line-height: 1.6; }
+        .feature-list { margin-top: 40px; text-align: left; }
+        .feature-item { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .feature-item i { font-size: 22px; }
+        .feature-item span { font-size: 16px; }
+        .register-right { padding: 40px; width: 50%; background: white; }
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 12px 15px;
+            border: 1px solid #e2e8f0;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #cd4cad;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+            outline: none;
+        }
+        .form-control.is-invalid, .form-select.is-invalid {
+            border-color: #a767a1;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc2626'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc2626' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+        .form-control.is-valid, .form-select.is-valid {
+            border-color: #b54cac;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2310b981' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+        .invalid-feedback { color: #6389fc; font-size: 12px; margin-top: 5px; display: block; }
+        .valid-feedback { color: #6389fc; font-size: 12px; margin-top: 5px; display: block; }
+        .form-label { font-weight: 600; margin-bottom: 8px; display: block; color: #c26fb6; }
+        .btn-register {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            width: 100%;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-register:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102,126,234,0.4); }
+        .text-center { text-align: center; }
+        .mt-3 { margin-top: 15px; }
+        .mt-4 { margin-top: 20px; }
+        .mb-4 { margin-bottom: 20px; }
+        .alert { padding: 12px; border-radius: 10px; margin-bottom: 20px; }
+        .alert-success { background: #d1fae5; color: #065f46; border: none; }
+        .text-decoration-none { text-decoration: none; }
+        @media (max-width: 768px) {
+            .register-card { flex-direction: column; }
+            .register-left, .register-right { width: 100%; }
+            .register-left { padding: 30px; }
+            .logo-img { max-width: 120px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-card">
+        <div class="register-left">
+            <div>
+                <div class="logo-center">
+                    <img src="{{ asset('assets/images/psydesk-logo.png') }}" alt="PSYDESK" class="logo-img">
+                </div>
+                <h2>Inscription</h2>
+                <p>Rejoignez notre communauté et profitez de tous nos services.</p>
+            </div>
+            <div class="feature-list">
+                <div class="feature-item"><i class="ri-checkbox-circle-line"></i><span>Accès illimité</span></div>
+                <div class="feature-item"><i class="ri-shield-star-line"></i><span>Sécurisé</span></div>
+                <div class="feature-item"><i class="ri-customer-service-line"></i><span>Support 24/7</span></div>
+            </div>
+        </div>
+        <div class="register-right">
+            <h3 class="text-center mb-4" style="color: #1e293b;">Créez votre compte</h3>
+            
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+            
+            {{ form_start(registrationForm, {'attr': {'id': 'registerForm', 'novalidate': 'novalidate'}}) }}
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        {{ form_label(registrationForm.nom, 'Nom', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(registrationForm.nom, {'attr': {'class': 'form-control', 'placeholder': 'Dupont', 'id': 'nom', 'minlength': '2'}}) }}
+                        <div class="invalid-feedback">Le nom doit contenir au moins 2 caractères.</div>
+                        <div class="valid-feedback">Nom valide !</div>
+                        {{ form_errors(registrationForm.nom) }}
+                    </div>
+                    <div style="flex: 1;">
+                        {{ form_label(registrationForm.prenom, 'Prénom', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(registrationForm.prenom, {'attr': {'class': 'form-control', 'placeholder': 'Jean', 'id': 'prenom', 'minlength': '2'}}) }}
+                        <div class="invalid-feedback">Le prénom doit contenir au moins 2 caractères.</div>
+                        <div class="valid-feedback">Prénom valide !</div>
+                        {{ form_errors(registrationForm.prenom) }}
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    {{ form_label(registrationForm.age, 'Âge', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(registrationForm.age, {'attr': {'class': 'form-control', 'placeholder': '25', 'id': 'age', 'min': '18', 'max': '120'}}) }}
+                    <div class="invalid-feedback">L'âge doit être compris entre 18 et 120 ans.</div>
+                    <div class="valid-feedback">Âge valide !</div>
+                    {{ form_errors(registrationForm.age) }}
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    {{ form_label(registrationForm.email, 'Email', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control', 'placeholder': 'exemple@email.com', 'id': 'email'}}) }}
+                    <div class="invalid-feedback">Veuillez entrer un email valide.</div>
+                    <div class="valid-feedback">Email valide !</div>
+                    {{ form_errors(registrationForm.email) }}
+                </div>
+
+                <!-- Liste déroulante avec seulement PATIENT (champ caché ou désactivé) -->
+                <div style="margin-bottom: 15px; display: none;">
+                    {{ form_label(registrationForm.role, 'Je suis', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(registrationForm.role, {'attr': {'class': 'form-select', 'id': 'role'}}) }}
+                </div>
+                
+                <!-- Champ caché pour forcer le rôle PATIENT -->
+                <input type="hidden" name="role" value="ROLE_PATIENT">
+
+                <div style="margin-bottom: 20px;">
+                    {{ form_label(registrationForm.plainPassword, 'Mot de passe', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control', 'placeholder': 'Minimum 6 caractères', 'id': 'password', 'minlength': '6'}}) }}
+                    <div class="invalid-feedback">Le mot de passe doit contenir au moins 6 caractères.</div>
+                    <div class="valid-feedback">Mot de passe valide !</div>
+                    {{ form_errors(registrationForm.plainPassword) }}
+                </div>
+
+                <button type="submit" class="btn-register">
+                    <i class="ri-user-add-line me-2"></i>S'inscrire
+                </button>
+
+                <div class="text-center mt-3">
+                    <a href="{{ path('app_login') }}" class="text-decoration-none" style="color: #667eea;">Déjà un compte ? Se connecter</a>
+                </div>
+            {{ form_end(registrationForm) }}
+        </div>
+    </div>
+    
+    <script>
+        // Validation en temps réel
+        const nomInput = document.getElementById('nom');
+        const prenomInput = document.getElementById('prenom');
+        const ageInput = document.getElementById('age');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        
+        function validateField(input, isValid) {
+            if (input.value) {
+                if (isValid) {
+                    input.classList.remove('is-invalid');
+                    input.classList.add('is-valid');
+                } else {
+                    input.classList.remove('is-valid');
+                    input.classList.add('is-invalid');
+                }
+            }
+            return isValid && input.value;
+        }
+        
+        function validateNom() {
+            return validateField(nomInput, nomInput.value.length >= 2);
+        }
+        
+        function validatePrenom() {
+            return validateField(prenomInput, prenomInput.value.length >= 2);
+        }
+        
+        function validateAge() {
+            const age = parseInt(ageInput.value);
+            return validateField(ageInput, age >= 18 && age <= 120);
+        }
+        
+        function validateEmail() {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return validateField(emailInput, emailRegex.test(emailInput.value));
+        }
+        
+        function validatePassword() {
+            return validateField(passwordInput, passwordInput.value.length >= 6);
+        }
+        
+        nomInput.addEventListener('input', validateNom);
+        prenomInput.addEventListener('input', validatePrenom);
+        ageInput.addEventListener('input', validateAge);
+        emailInput.addEventListener('input', validateEmail);
+        passwordInput.addEventListener('input', validatePassword);
+        
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const isNomValid = validateNom();
+            const isPrenomValid = validatePrenom();
+            const isAgeValid = validateAge();
+            const isEmailValid = validateEmail();
+            const isPasswordValid = validatePassword();
+            
+            if (!isNomValid || !isPrenomValid || !isAgeValid || !isEmailValid || !isPasswordValid) {
+                e.preventDefault();
+                alert('Veuillez corriger les erreurs dans le formulaire.');
+            }
+        });
+    </script>
+</body>
+</html>

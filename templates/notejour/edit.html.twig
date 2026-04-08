@@ -1,0 +1,13 @@
+
+
+{% block title %}Edit Notejour{% endblock %}
+
+{% block body %}
+    <h1>Edit Notejour</h1>
+
+    {{ include('notejour/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_notejour_index') }}">back to list</a>
+
+    {{ include('notejour/_delete_form.html.twig') }}
+{% endblock %}

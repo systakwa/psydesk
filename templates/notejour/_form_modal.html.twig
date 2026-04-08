@@ -1,0 +1,47 @@
+{# templates/notejour/_form_modal.html.twig #}
+{{ form_start(form, {'attr': {'id': 'notejour-form', 'class': 'needs-validation'}}) }}
+    <input type="hidden" name="objectif_id" value="{{ objectif_id }}">  {# ← champ caché #}
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Date</label>
+        {{ form_widget(form.date, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.date) }}
+    </div>
+    <div class="mb-3">
+        <label class="form-label fw-bold">Contenu de la note</label>
+        {{ form_widget(form.texteNote, {'attr': {'class': 'form-control', 'rows': 5, 'placeholder': 'Décrivez votre note...'}}) }}
+        {{ form_errors(form.texteNote) }}
+        <small class="form-text text-muted">Minimum 5 caractères.</small>
+    </div>
+    <div class="mb-3">
+        <label class="form-label fw-bold">Niveau de satisfaction</label>
+        <div class="d-flex justify-content-between">
+            <span class="text-muted small">0 - Très insatisfait</span>
+            <span class="text-muted small">5 - Neutre</span>
+            <span class="text-muted small">10 - Très satisfait</span>
+        </div>
+        {{ form_widget(form.satisfer, {'attr': {'class': 'form-range', 'min': 0, 'max': 10, 'step': 1}}) }}
+        {{ form_errors(form.satisfer) }}
+        <div class="mt-2 text-center" id="satisfaction-value">0</div>
+    </div>
+    <div class="mb-3 form-check">
+        {{ form_widget(form.evaluation, {'attr': {'class': 'form-check-input'}}) }}
+        {{ form_label(form.evaluation, 'Objectif achevé !', {'label_attr': {'class': 'form-check-label'}}) }}
+        {{ form_errors(form.evaluation) }}
+    </div>
+    <div class="d-flex justify-content-end gap-2 mt-3">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="submit" class="btn btn-primary">Ajouter la note</button>
+    </div>
+{{ form_end(form) }}
+
+<script>
+    const slider = document.getElementById('{{ form.satisfer.vars.id }}');
+    if (slider) {
+        const output = document.getElementById('satisfaction-value');
+        output.textContent = slider.value;
+        slider.addEventListener('input', function() {
+            output.textContent = this.value;
+        });
+    }
+</script>
