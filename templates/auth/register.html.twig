@@ -10,7 +10,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: white;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             align-items: center;
@@ -41,8 +41,15 @@
             justify-content: space-between;
             text-align: center;
         }
-        .logo-center { margin-bottom: 30px; }
-        .logo-img { max-width: 180px; height: auto; display: inline-block; }
+        /* Styles pour le logo comme sur la page login */
+        .sidebar-logo-container {
+            margin: 20px 0;
+        }
+        .sidebar-logo {
+            max-width: 180px;
+            height: auto;
+            filter: brightness(0) invert(1);
+        }
         .register-left h2 { font-size: 2rem; font-weight: bold; margin-bottom: 20px; }
         .register-left p { opacity: 0.9; line-height: 1.6; }
         .feature-list { margin-top: 40px; text-align: left; }
@@ -102,7 +109,7 @@
             .register-card { flex-direction: column; }
             .register-left, .register-right { width: 100%; }
             .register-left { padding: 30px; }
-            .logo-img { max-width: 120px; }
+            .sidebar-logo { max-width: 120px; }
         }
     </style>
 </head>
@@ -110,11 +117,15 @@
     <div class="register-card">
         <div class="register-left">
             <div>
-                <div class="logo-center">
-                    <img src="{{ asset('assets/images/psydesk-logo.png') }}" alt="PSYDESK" class="logo-img">
-                </div>
                 <h2>Inscription</h2>
                 <p>Rejoignez notre communauté et profitez de tous nos services.</p>
+                <!-- Conteneur du logo stylisé comme sur la page login -->
+                <div class="sidebar-logo-container">
+                    <img src="{{ asset('assets/images/logop.png') }}" 
+                         alt="Logo IOVision" 
+                         class="sidebar-logo"
+                         onerror="this.style.display='none'">
+                </div>
             </div>
             <div class="feature-list">
                 <div class="feature-item"><i class="ri-checkbox-circle-line"></i><span>Accès illimité</span></div>
