@@ -42,6 +42,11 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
+    
+    #[ORM\Column(length: 255)]
+    private ?string $image = null;
+
+
     public function __construct()
     {
         $this->role = [self::ROLE_PATIENT];
@@ -66,6 +71,8 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): static { $this->password = $password; return $this; }
     public function eraseCredentials(): void {}
     public function getFullName(): string { return $this->prenom . ' ' . $this->nom; }
+    public function getImage(): ?string {return $this->image;}
+    public function setImage(string $image): static {$this->image = $image; return $this;}
 
     //teb3in gestion objectif 
     /**
@@ -128,4 +135,7 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
         }
         return $this;
     }
+//////////////////////////////////////////////////////
+
+    
 }

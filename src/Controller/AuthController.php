@@ -15,6 +15,9 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use App\Repository\ReclamationRepository;
+use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+
 
 class AuthController extends AbstractController
 {
@@ -46,7 +49,7 @@ class AuthController extends AbstractController
     {
         throw new \LogicException('This method is intercepted by the logout key in your firewall.');
     }
-
+/*
     #[Route('/register', name: 'app_register')]
     public function register(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager): Response
     {
@@ -91,7 +94,70 @@ class AuthController extends AbstractController
         return $this->render('auth/register.html.twig', [
             'registrationForm' => $form->createView(),
         ]);
+    }*/
+ //fiha image        
+#[Route('/register', name: 'app_register')]
+public function register(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+{
+    $user = new Users();
+    $form = $this->createForm(RegistrationFormType::class, $user);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $selectedRole = $form->get('role')->getData();
+        $user->setRoles([$selectedRole]);
+        
+        $user->setPassword(
+            $passwordHasher->hashPassword(
+                $user,
+                $form->get('plainPassword')->getData()
+            )
+        );
+        
+        // Gestion de l'upload de l'image
+        $imageFile = $form->get('imageFile')->getData();
+        if ($imageFile) {
+            $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+            $safeFilename = $slugger->slug($originalFilename);
+            $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+            try {
+                $imageFile->move(
+                    $this->getParameter('kernel.project_dir').'/public/uploads/profiles',
+                    $newFilename
+                );
+                $user->setImage('/uploads/profiles/'.$newFilename);
+            } catch (FileException $e) {
+                $this->addFlash('error', 'Erreur lors de l\'upload de l\'image de profil.');
+            }
+        }
+        
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        // Enregistrer dans l'historique la création du compte
+        $history = new UserHistory();
+        $history->setUserId($user->getId());
+        $history->setActionType('create');
+        $history->setFieldName('compte');
+        $history->setOldValue(null);
+        $history->setNewValue("Création du compte utilisateur {$user->getFullName()} (ID: {$user->getId()}) avec le rôle " . ($selectedRole === Users::ROLE_ADMIN ? 'Administrateur' : ($selectedRole === Users::ROLE_PSYCHOLOGUE ? 'Psychologue' : 'Patient')));
+        $history->setModifiedBy($user->getId());
+        $history->setIpAddress($request->getClientIp());
+        $history->setUserAgent($request->headers->get('User-Agent'));
+        $history->setCreatedAt(new \DateTime());
+        $entityManager->persist($history);
+        $entityManager->flush();
+
+        $roleName = $selectedRole === Users::ROLE_ADMIN ? 'Administrateur' : ($selectedRole === Users::ROLE_PSYCHOLOGUE ? 'Psychologue' : 'Patient');
+        $this->addFlash('success', ' Votre compte a été créé avec succès ! Vous êtes inscrit en tant que ' . $roleName . '.');
+        
+        return $this->redirectToRoute('app_login');
     }
+
+    return $this->render('auth/register.html.twig', [
+        'registrationForm' => $form->createView(),
+    ]);
+}
 
     #[Route('/reset-password', name: 'app_reset_password')]
     public function resetPassword(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher, MailerInterface $mailer): Response

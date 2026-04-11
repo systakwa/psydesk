@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 #[Route('/admin/user')]
 #[IsGranted('ROLE_ADMIN')]  // Seuls les admins peuvent accéder
@@ -25,7 +26,7 @@ class UserController extends AbstractController
             'users' => $userRepository->findAll(),
         ]);
     }
-
+/*
     #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
@@ -51,6 +52,50 @@ class UserController extends AbstractController
             'user' => $user,
             'form' => $form,
         ]);
+    }*/
+    //hethi  fiha image
+    #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher, SluggerInterface $slugger): Response
+    {
+        $user = new Users();
+        $form = $this->createForm(UserType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Hasher le mot de passe
+            $plainPassword = $form->get('plainPassword')->getData();
+            if ($plainPassword) {
+                $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
+            }
+            
+            // Gestion de l'upload de l'image
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+                try {
+                    $imageFile->move(
+                        $this->getParameter('kernel.project_dir').'/public/uploads/profiles',
+                        $newFilename
+                    );
+                    $user->setImage('/uploads/profiles/'.$newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Erreur lors de l\'upload de l\'image');
+                }
+            }
+            
+            $entityManager->persist($user);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Utilisateur créé avec succès !');
+            return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('user/new.html.twig', [
+            'user' => $user,
+            'form' => $form,
+        ]);
     }
 
     #[Route('/{id}', name: 'app_user_show', methods: ['GET'])]
@@ -60,7 +105,7 @@ class UserController extends AbstractController
             'user' => $user,
         ]);
     }
-
+/*
     #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Users $user, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
@@ -84,8 +129,59 @@ class UserController extends AbstractController
             'user' => $user,
             'form' => $form,
         ]);
+    }*/
+    
+    //hethi edit fiha image
+    #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, Users $user, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher, SluggerInterface $slugger): Response
+    {
+        $form = $this->createForm(UserType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Hasher le nouveau mot de passe si fourni
+            $plainPassword = $form->get('plainPassword')->getData();
+            if ($plainPassword) {
+                $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
+            }
+            
+            // Gestion de l'upload de l'image (remplace l'ancienne)
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                // Supprimer l'ancienne image si elle existe
+                if ($user->getImage()) {
+                    $oldImagePath = $this->getParameter('kernel.project_dir').'/public'.$user->getImage();
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+                try {
+                    $imageFile->move(
+                        $this->getParameter('kernel.project_dir').'/public/uploads/profiles',
+                        $newFilename
+                    );
+                    $user->setImage('/uploads/profiles/'.$newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Erreur lors de l\'upload de l\'image');
+                }
+            }
+            
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Utilisateur modifié avec succès !');
+            return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('user/edit.html.twig', [
+            'user' => $user,
+            'form' => $form,
+        ]);
     }
 
+/*
     #[Route('/{id}', name: 'app_user_delete', methods: ['POST'])]
     public function delete(Request $request, Users $user, EntityManagerInterface $entityManager): Response
     {
@@ -94,6 +190,31 @@ class UserController extends AbstractController
             if ($user->getId() === $this->getUser()->getId()) {
                 $this->addFlash('error', 'Vous ne pouvez pas supprimer votre propre compte.');
                 return $this->redirectToRoute('app_user_index');
+            }
+            
+            $entityManager->remove($user);
+            $entityManager->flush();
+            $this->addFlash('success', 'Utilisateur supprimé avec succès !');
+        }
+
+        return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+    }*/
+
+         #[Route('/{id}', name: 'app_user_delete', methods: ['POST'])]
+    public function delete(Request $request, Users $user, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->request->get('_token'))) {
+            if ($user->getId() === $this->getUser()->getId()) {
+                $this->addFlash('error', 'Vous ne pouvez pas supprimer votre propre compte.');
+                return $this->redirectToRoute('app_user_index');
+            }
+            
+            // Supprimer l'image associée
+            if ($user->getImage()) {
+                $imagePath = $this->getParameter('kernel.project_dir').'/public'.$user->getImage();
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
             }
             
             $entityManager->remove($user);

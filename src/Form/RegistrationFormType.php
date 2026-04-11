@@ -15,7 +15,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Range;
-
+use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 class RegistrationFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -60,7 +61,20 @@ class RegistrationFormType extends AbstractType
                     new NotBlank(['message' => 'Veuillez entrer un mot de passe']),
                     new Length(['min' => 6, 'minMessage' => 'Le mot de passe doit contenir au moins 6 caractères']),
                 ],
-            ]);
+            ])
+             ->add('imageFile', FileType::class, [
+        'label' => 'Photo de profil',
+        'mapped' => false,
+        'required' => false,
+        'constraints' => [
+            new File([
+                'maxSize' => '2M',
+                'mimeTypes' => ['image/jpeg', 'image/png', 'image/webp'],
+                'mimeTypesMessage' => 'Veuillez uploader une image valide (JPEG, PNG, WEBP)',
+            ])
+        ],
+        'attr' => ['class' => 'form-control-file']
+    ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
