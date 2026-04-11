@@ -1,0 +1,45 @@
+# config/routes.yaml
+
+# Routes d'authentification
+app_login:
+    path: /login
+    controller: App\Controller\AuthController::login
+
+app_logout:
+    path: /logout
+    controller: App\Controller\AuthController::logout
+
+app_register:
+    path: /register
+    controller: App\Controller\AuthController::register
+
+app_forgot_password:
+    path: /forgot-password
+    controller: App\Controller\AuthController::forgotPassword
+
+app_reset_password:
+    path: /reset-password/{token}
+    controller: App\Controller\AuthController::resetPassword
+
+app_dashboard:
+    path: /dashboard
+    controller: App\Controller\AuthController::dashboard
+
+app_profile:
+    path: /profile
+    controller: App\Controller\AuthController::profile
+
+app_home:
+    path: /
+    controller: App\Controller\AuthController::home
+
+# Routes Google (bien indentées à la racine)
+connect_google_start:
+    path: /connect/google
+    controller: hwi_oauth.controller.connect::connectAction
+    defaults: { service: google }
+
+connect_google_check:
+    path: /connect/google/check
+    controller: hwi_oauth.controller.connect::checkAction
+    defaults: { service: google }

@@ -1,0 +1,266 @@
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Historique des actions | PSYDESK{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 5px;
+        }
+        
+        /* Filters */
+        .filters-bar {
+            background: white;
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-btn {
+            padding: 8px 20px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: #2e129f;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        .date-input {
+            padding: 8px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .clear-btn {
+            background: #a43ba4;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        
+        /* History Table */
+        .history-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            overflow-x: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #557fc3;
+        }
+        
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-block;
+        }
+        .badge-login { background: #d34bbc; color: white; }
+        .badge-create { background: #b828b8; color: white; }
+        .badge-edit { background: #cd6adb; color: white; }
+        .badge-delete { background: #de71b8; color: white; }
+        .badge-reset_password { background: #8b5cf6; color: white; }
+        
+        @media (max-width: 1200px) {
+            .stats-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- Ligne d'en-tête Corona -->
+    <div class="row">
+        <div class="col-12 grid-margin stretch-card">
+            <div class="card corona-gradient-card">
+                <div class="card-body py-0 px-0 px-sm-3">
+                    <div class="row align-items-center">
+                        <div class="col-4 col-sm-3 col-xl-2">
+                            <img src="{{ asset('assets/images/dashboard/Group126@2x.png') }}" class="gradient-corona-img img-fluid" alt="">
+                        </div>
+                        <div class="col-5 col-sm-7 col-xl-8 p-0">
+                            <h4 class="mb-1 mb-sm-0">Historique des actions</h4>
+                            <p class="mb-0 font-weight-normal d-none d-sm-block">Traçabilité complète de toutes les actions</p>
+                        </div>
+                        <div class="col-3 col-sm-2 col-xl-2 pl-0 text-center">
+                            <form method="post" action="{{ path('app_history_clear') }}" onsubmit="return confirm('Supprimer tout l\'historique ? Cette action est irréversible.')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('clear_history') }}">
+                                <button type="submit" class="btn btn-outline-light btn-rounded">🗑️ Vider l'historique</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cartes statistiques -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number" style="color: #667eea;">{{ totalActions }}</div>
+            <div class="stat-label">Total actions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: #a23286;">{{ totalConnexions }}</div>
+            <div class="stat-label">Connexions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: #667eea;">{{ totalCreations }}</div>
+            <div class="stat-label">Créations</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: #964792;">{{ totalModifications }}</div>
+            <div class="stat-label">Modifications</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: #ef44bf;">{{ totalSuppressions }}</div>
+            <div class="stat-label">Suppressions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: #8b5cf6;">{{ totalResetPassword }}</div>
+            <div class="stat-label">Reset password</div>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="filters-bar">
+        <a href="{{ path('app_history_index', {'filter': 'all'}) }}" class="filter-btn {% if currentFilter == 'all' %}active{% endif %}">Tous</a>
+        <a href="{{ path('app_history_index', {'filter': 'login'}) }}" class="filter-btn {% if currentFilter == 'login' %}active{% endif %}">Connexions</a>
+        <a href="{{ path('app_history_index', {'filter': 'create'}) }}" class="filter-btn {% if currentFilter == 'create' %}active{% endif %}">Créations</a>
+        <a href="{{ path('app_history_index', {'filter': 'edit'}) }}" class="filter-btn {% if currentFilter == 'edit' %}active{% endif %}">Modifications</a>
+        <a href="{{ path('app_history_index', {'filter': 'delete'}) }}" class="filter-btn {% if currentFilter == 'delete' %}active{% endif %}">Suppressions</a>
+        <a href="{{ path('app_history_index', {'filter': 'reset_password'}) }}" class="filter-btn {% if currentFilter == 'reset_password' %}active{% endif %}">Reset password</a>
+
+        <input type="date" id="dateFilter" class="date-input" value="{{ currentDate }}">
+        <button id="applyDateBtn" class="filter-btn">Appliquer date</button>
+        <button id="clearDateBtn" class="clear-btn">Effacer date</button>
+    </div>
+
+    <!-- Tableau de l'historique -->
+    <div class="history-card">
+        {% if history is empty %}
+            <div style="text-align: center; padding: 60px;">
+                <i class="ri-history-line" style="font-size: 64px; color: #cbd5e1;"></i>
+                <p style="margin-top: 20px; color: #64748b;">Aucune action enregistrée pour le moment</p>
+            </div>
+        {% else %}
+            <div style="overflow-x: auto;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                            <th>Utilisateur concerné</th>
+                            <th>Détails</th>
+                            <th>IP</th>
+                            <th>Modifié par</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in history %}
+                            <tr>
+                                <td>#{{ item.id }}</div>
+                                <td>{{ item.createdAt|date('d/m/Y H:i:s') }}</div>
+                                <td>
+                                    {% if item.actionType == 'login' %}
+                                        <span class="badge badge-login">Connexion</span>
+                                    {% elseif item.actionType == 'create' %}
+                                        <span class="badge badge-create">Création</span>
+                                    {% elseif item.actionType == 'edit' %}
+                                        <span class="badge badge-edit">Modification</span>
+                                    {% elseif item.actionType == 'delete' %}
+                                        <span class="badge badge-delete">Suppression</span>
+                                    {% elseif item.actionType == 'reset_password' %}
+                                        <span class="badge badge-reset_password">Reset password</span>
+                                    {% else %}
+                                        <span class="badge">{{ item.actionType }}</span>
+                                    {% endif %}
+                                 </div>
+                                <td>
+                                    <strong>ID: {{ item.userId }}</strong>
+                                 </div>
+                                <td>{{ item.newValue|slice(0, 100) }}{% if item.newValue|length > 100 %}...{% endif %}</div>
+                                <td>{{ item.ipAddress ?: '-' }}</div>
+                                <td>ID: {{ item.modifiedBy ?: '-' }}</div>
+                             </div>
+                        {% endfor %}
+                    </tbody>
+                 </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        const dateFilter = document.getElementById('dateFilter');
+        const applyDateBtn = document.getElementById('applyDateBtn');
+        const clearDateBtn = document.getElementById('clearDateBtn');
+
+        applyDateBtn.addEventListener('click', function() {
+            const date = dateFilter.value;
+            if (date) {
+                window.location.href = "{{ path('app_history_index') }}?filter={{ currentFilter }}&date=" + date;
+            }
+        });
+
+        clearDateBtn.addEventListener('click', function() {
+            window.location.href = "{{ path('app_history_index') }}?filter={{ currentFilter }}";
+        });
+    </script>
+{% endblock %}
