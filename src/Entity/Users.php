@@ -8,6 +8,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: '`users`')]
@@ -24,50 +25,125 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: 'Le nom est obligatoire')]
+    #[Assert\Length(
+        min: 2,
+        max: 100,
+        minMessage: 'Le nom doit contenir au moins {{ limit }} caractères',
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-ZÀ-ÿ\s\-]+$/',
+        message: 'Le nom ne peut contenir que des lettres, des espaces et des tirets'
+    )]
     private ?string $nom = null;
 
     #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: 'Le prénom est obligatoire')]
+    #[Assert\Length(
+        min: 2,
+        max: 100,
+        minMessage: 'Le prénom doit contenir au moins {{ limit }} caractères',
+        maxMessage: 'Le prénom ne peut pas dépasser {{ limit }} caractères'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-ZÀ-ÿ\s\-]+$/',
+        message: 'Le prénom ne peut contenir que des lettres, des espaces et des tirets'
+    )]
     private ?string $prenom = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: 'L\'âge est obligatoire')]
+    #[Assert\Type(
+        type: 'integer',
+        message: 'L\'âge doit être un nombre entier'
+    )]
+    #[Assert\Range(
+        min: 0,
+        max: 120,
+        notInRangeMessage: 'L\'âge doit être compris entre {{ min }} et {{ max }} ans'
+    )]
+    #[Assert\PositiveOrZero(message: 'L\'âge ne peut pas être négatif')]
     private ?int $age = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Assert\NotBlank(message: 'L\'email est obligatoire')]
+    #[Assert\Email(
+        message: 'L\'email {{ value }} n\'est pas valide',
+        mode: 'html5'
+    )]
+    #[Assert\Length(
+        max: 180,
+        maxMessage: 'L\'email ne peut pas dépasser {{ limit }} caractères'
+    )]
     private ?string $email = null;
-
     
-   #[ORM\Column]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $googleId = null;
+    
+    #[ORM\Column]
+    #[Assert\NotBlank(message: 'Le rôle est obligatoire')]
+    #[Assert\Choice(
+        choices: [self::ROLE_ADMIN, self::ROLE_PSYCHOLOGUE, self::ROLE_PATIENT],
+        multiple: true,
+        message: 'Choisissez un rôle valide'
+    )]
     private array $role = [];
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: 'Le mot de passe est obligatoire', groups: ['registration'])]
+    #[Assert\Length(
+        min: 8,
+        max: 255,
+        minMessage: 'Le mot de passe doit contenir au moins {{ limit }} caractères',
+        groups: ['registration']
+    )]
+    #[Assert\Regex(
+        pattern: '/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/',
+        message: 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial',
+        groups: ['registration']
+    )]
     private ?string $password = null;
 
     public function __construct()
     {
         $this->role = [self::ROLE_PATIENT];
-        //teb3in objectif 
         $this->objectifs = new ArrayCollection();
         $this->reclamations = new ArrayCollection();
     }
 
+    // Getters et setters existants...
+
     public function getId(): ?int { return $this->id; }
+    
     public function getNom(): ?string { return $this->nom; }
     public function setNom(string $nom): static { $this->nom = $nom; return $this; }
+    
     public function getPrenom(): ?string { return $this->prenom; }
     public function setPrenom(string $prenom): static { $this->prenom = $prenom; return $this; }
+    
     public function getAge(): ?int { return $this->age; }
     public function setAge(int $age): static { $this->age = $age; return $this; }
+    
     public function getEmail(): ?string { return $this->email; }
     public function setEmail(string $email): static { $this->email = $email; return $this; }
+    
+    public function getGoogleId(): ?string { return $this->googleId; }
+    public function setGoogleId(?string $googleId): static { $this->googleId = $googleId; return $this; }
+    
     public function getUserIdentifier(): string { return (string) $this->email; }
+    
     public function getRoles(): array { return array_unique($this->role); }
     public function setRoles(array $role): static { $this->role = $role; return $this; }
+    
     public function getPassword(): ?string { return $this->password; }
     public function setPassword(string $password): static { $this->password = $password; return $this; }
+    
     public function eraseCredentials(): void {}
+    
     public function getFullName(): string { return $this->prenom . ' ' . $this->nom; }
 
-    //teb3in gestion objectif 
+    // Relations existantes...
     /**
      * @var Collection<int, Objectif>
      */
@@ -79,7 +155,6 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\OneToMany(targetEntity: Reclamation::class, mappedBy: 'idPatient')]
     private Collection $reclamations;
-
 
     public function getObjectifs(): Collection
     {

@@ -295,12 +295,15 @@
 </head>
 <body>
 <div class="container" id="container">
-    <!-- FORMULAIRE TECHNICIEN (sign-in) -->
+    <!-- FORMULAIRE DE CONNEXION -->
     <div class="form-container sign-in">
         <form method="post" action="{{ path('app_login') }}" novalidate>
-            <h1>Connexion </h1>
+            <h1>Connexion</h1>
             <div class="social-icons">
-                <a href="#" class="icon"><i class="fa-brands fa-google-plus-g"></i></a>
+                <!-- LIEN GOOGLE CORRIGÉ - C'est la correction importante ! -->
+                <a href="{{ path('connect_google_start') }}" class="icon">
+                    <i class="fa-brands fa-google-plus-g"></i>
+                </a>
                 <a href="#" class="icon"><i class="fa-brands fa-facebook-f"></i></a>
                 <a href="#" class="icon"><i class="fa-brands fa-github"></i></a>
                 <a href="#" class="icon"><i class="fa-brands fa-linkedin-in"></i></a>
@@ -324,18 +327,14 @@
         </form>
     </div>
 
-    
-
-    <!-- PANEL TOGGLE (deux panneaux coulissants) -->
+    <!-- PANEL TOGGLE -->
     <div class="toggle-container">
         <div class="toggle">
-            <!-- Panneau de gauche (apparaît quand on bascule vers réceptionniste) -->
             <div class="toggle-panel toggle-left">
                 <h1>Welcome Back!</h1>
                 <p>Basculez vers l'espace Réceptionniste</p>
                 <button class="hidden" id="login">Accès Réceptionniste</button>
             </div>
-            <!-- Panneau de droite (visible par défaut, avec le logo) -->
             <div class="toggle-panel toggle-right">
                 <div class="sidebar-logo-container">
                     <img src="{{ asset('assets/images/logop.png') }}" 
