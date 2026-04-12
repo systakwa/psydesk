@@ -30,7 +30,7 @@ security:
         - { path: ^/reset-password$, role: PUBLIC_ACCESS }
         - { path: ^/patient/dashboard, role: ROLE_PATIENT }
         - { path: ^/psychologue/dashboard, role: ROLE_PSYCHOLOGUE }
-        - { path: ^/admin, role: ROLE_ADMIN }
+        - { path: ^/admin, roles: [ROLE_ADMIN, ROLE_PSYCHOLOGUE] }
         - { path: ^/dashboard, role: IS_AUTHENTICATED_FULLY }
         - { path: ^/profile, role: IS_AUTHENTICATED_FULLY }
 

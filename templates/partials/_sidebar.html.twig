@@ -60,29 +60,64 @@
         <li class="nav-item nav-category">
             <span class="nav-link">Navigation</span>
         </li>
+
+        {% if is_granted('ROLE_ADMIN') %}
         <li class="nav-item menu-items">
-            <a class="nav-link" href="{{ path('app_dashboard') }}">
+            <a class="nav-link {% if app.request.get('_route') == 'app_admin_dashboard' %}active{% endif %}" href="{{ path('app_admin_dashboard') }}">
                 <span class="menu-icon">
                     <i class="mdi mdi-speedometer"></i>
                 </span>
                 <span class="menu-title">Dashboard</span>
             </a>
         </li>
-        
+
         <li class="nav-item menu-items">
-            <a class="nav-link" href="{{ path('app_reclamation') }}">
+            <a class="nav-link {% if app.request.get('_route') starts with 'app_reclamation' %}active{% endif %}" href="{{ path('app_reclamation') }}">
                 <span class="menu-icon">
-                    <i class="mdi mdi-speedometer"></i>
+                    <i class="mdi mdi-chat-bubble-outline"></i>
                 </span>
-                <span class="menu-title">reclamation</span>
-            <a class="nav-link" href="{{ path('app_logout') }}">
-                <span class="menu-icon">
-                    <i class="mdi mdi-speedometer"></i>
-                </span>
-                <span class="menu-title">Déconnexion</span>
-                        
-            </ul>
+                <span class="menu-title">Réclamations</span>
             </a>
         </li>
-        
+
+        {% elseif is_granted('ROLE_PSYCHOLOGUE') %}
+
+           <li class="nav-item menu-items">
+            <a class="nav-link {% if app.request.get('_route') in ['app_reservation_back_index', 'app_reservation_back_show', 'app_reservation_back_new', 'app_reservation_back_edit', 'app_reservation_back_accept', 'app_reservation_back_refuse'] %}active{% endif %}" href="{{ path('app_reservation_back_index') }}">
+                <span class="menu-icon">
+                    <i class="mdi mdi-calendar-check"></i>
+                </span>
+                <span class="menu-title">Réservations</span>
+            </a>
+        </li>
+
+        <li class="nav-item menu-items">
+            <a class="nav-link {% if app.request.get('_route') in ['app_planning_back_index', 'app_planning_back_show', 'app_planning_back_new', 'app_planning_back_edit'] %}active{% endif %}" href="{{ path('app_planning_back_index') }}">
+                <span class="menu-icon">
+                    <i class="mdi mdi-calendar-clock"></i>
+                </span>
+                <span class="menu-title">Planning</span>
+            </a>
+        </li>
+
+        <li class="nav-item menu-items">
+            <a class="nav-link {% if app.request.get('_route') in ['app_fiche_back_index', 'app_fiche_back_show', 'app_fiche_back_new', 'app_fiche_back_edit'] %}active{% endif %}" href="{{ path('app_fiche_back_index') }}">
+                <span class="menu-icon">
+                    <i class="mdi mdi-file-document"></i>
+                </span>
+                <span class="menu-title">Fiches</span>
+            </a>
+        </li>
+
+        {% endif %}
+
+        <li class="nav-item menu-items">
+            <a class="nav-link" href="{{ path('app_logout') }}">
+                <span class="menu-icon">
+                    <i class="mdi mdi-logout"></i>
+                </span>
+                <span class="menu-title">Déconnexion</span>
+            </a>
+        </li>
+
 </nav>

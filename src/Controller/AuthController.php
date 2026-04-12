@@ -159,11 +159,11 @@ class AuthController extends AbstractController
         }
         
         $role= $user->getRoles();
-        
+
         if (in_array('ROLE_ADMIN', $role)) {
             return $this->redirectToRoute('app_admin_dashboard');
         } elseif (in_array('ROLE_PSYCHOLOGUE', $role)) {
-            return $this->redirectToRoute('app_psychologue_dashboard');
+            return $this->redirectToRoute('app_reservation_back_index');
         } else {
             return $this->redirectToRoute('app_patient_dashboard');
         }

@@ -1,0 +1,88 @@
+{% extends 'base1.html.twig' %}
+
+{% block title %}PsyDesk Admin - Détail réservation{% endblock %}
+
+{% block page_title %}Détail de la réservation{% endblock %}
+{% block page_subtitle %}Informations complètes de la réservation n°{{ reservation.id }}{% endblock %}
+
+{% block page_header_action %}
+    <div class="d-flex gap-2">
+        <a href="{{ path('app_reservation_back_index') }}" class="btn btn-sm btn-secondary">
+            ← Retour
+        </a>
+        <a href="{{ path('app_reservation_back_edit', {'id': reservation.id}) }}" class="btn btn-sm btn-primary">
+            Modifier
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="info-card p-3 bg-dark rounded border-1" style="border: 1px solid #495057;">
+                                <label class="text-muted mb-1 small">ID de réservation</label>
+                                <h5 class="mb-0 text-white">#{{ reservation.id }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-card p-3 bg-dark rounded border-1" style="border: 1px solid #495057;">
+                                <label class="text-muted mb-1 small">Statut actuel</label>
+                                <div>
+                                    <span class="badge
+                                        {% if reservation.status == 'confirmé' %}badge-success
+                                        {% elseif reservation.status == 'annulé' %}badge-danger
+                                        {% else %}badge-warning{% endif %} px-3 py-2">
+                                        {{ reservation.status|upper }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h5 class="mb-3 text-white">Informations patient</h5>
+                        <div class="bg-dark p-3 rounded mb-4 border-1" style="border: 1px solid #495057;">
+                            {% if patient %}
+                                <p class="mb-1 text-light"><strong>Nom :</strong> {{ patient.prenom }} {{ patient.nom }}</p>
+                                <p class="mb-0 text-light"><strong>Email :</strong> {{ patient.email }}</p>
+                            {% else %}
+                                <p class="mb-1 text-light"><strong>ID Patient :</strong> {{ reservation.idPatient }}</p>
+                            {% endif %}
+                        </div>
+
+                        <h5 class="mb-3 text-white">Informations psychologue</h5>
+                        <div class="bg-dark p-3 rounded mb-4 border-1" style="border: 1px solid #495057;">
+                            {% if psychologue %}
+                                <p class="mb-1 text-light"><strong>Nom :</strong> Dr. {{ psychologue.prenom }} {{ psychologue.nom }}</p>
+                                <p class="mb-0 text-light"><strong>Email :</strong> {{ psychologue.email }}</p>
+                            {% else %}
+                                <p class="mb-1 text-light"><strong>ID Psychologue :</strong> {{ reservation.idPsychologue }}</p>
+                            {% endif %}
+                        </div>
+
+                        <h5 class="mb-3 text-white">Détails du rendez-vous</h5>
+                        <div class="bg-dark p-3 rounded mb-4 border-1" style="border: 1px solid #495057;">
+                            <p class="mb-2 text-light">
+                                <strong>📅 Date prévue :</strong><br>
+                                {{ reservation.datePrevue ? reservation.datePrevue|date('l d F Y à H:i') : 'Non définie' }}
+                            </p>
+                            <p class="mb-0 text-light">
+                                <strong>⏰ Date disponibilité :</strong><br>
+                                {{ reservation.dateDispo ? reservation.dateDispo|date('l d F Y à H:i') : 'Non définie' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-4 border-1" style="border: 1px solid #0d6efd;">
+                        <i class="mdi mdi-information-outline"></i>
+                        Pour modifier cette réservation, cliquez sur le bouton "Modifier" ci-dessus.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

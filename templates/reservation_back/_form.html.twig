@@ -1,0 +1,166 @@
+{{ form_start(form, {'attr': {'class': 'form-dark'}}) }}
+    <style>
+        .form-dark .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-dark .form-control,
+        .form-dark select,
+        .form-dark textarea {
+            background-color: #212529;
+            color: #ffffff;
+            border-color: #495057;
+            padding: 0.75rem 0.875rem;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+        .form-dark .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 16px;
+            background-color: #212529;
+            color: #ffffff;
+            border-color: #495057;
+            appearance: none;
+            padding-right: 2.5rem;
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+        }
+        .form-dark .form-select:focus {
+            background-color: #212529;
+            color: #ffffff;
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        .form-dark .form-select option {
+            background-color: #343a40;
+            color: #ffffff;
+            padding: 0.75rem;
+            margin: 0.25rem 0;
+            border-radius: 0.375rem;
+        }
+        .form-dark .form-select option:checked {
+            background: linear-gradient(#0d6efd, #0d6efd);
+            background-color: #0d6efd !important;
+            color: #ffffff;
+        }
+        .form-dark .form-select option:hover {
+            background-color: #495057;
+        }
+        .form-dark .form-control:focus,
+        .form-dark select:focus,
+        .form-dark textarea:focus {
+            background-color: #212529;
+            color: #ffffff;
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        .form-dark label {
+            color: #e9ecef;
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+            display: block;
+        }
+        .form-dark input[type="datetime-local"],
+        .form-dark input[type="date"],
+        .form-dark input[type="time"] {
+            background-color: #212529;
+            color: #ffffff;
+            border-color: #495057;
+            border: 1px solid #495057;
+            padding: 0.75rem 0.875rem;
+            font-size: 0.95rem;
+            border-radius: 0.375rem;
+            width: 100%;
+            font-family: inherit;
+        }
+        .form-dark input[type="datetime-local"]:focus,
+        .form-dark input[type="date"]:focus,
+        .form-dark input[type="time"]:focus {
+            background-color: #212529;
+            color: #ffffff;
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+            outline: none;
+        }
+        .form-dark input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+        .form-dark input[type="date"]::-webkit-calendar-picker-indicator,
+        .form-dark input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #0d6efd, #0099ff);
+            border: none;
+            color: white;
+            padding: 0.875rem 1.75rem;
+            font-weight: 600;
+            border-radius: 0.375rem;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+        }
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #0099ff, #0d6efd);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+            color: white;
+        }
+        .alert-danger {
+            color: #f8d7da;
+        }
+    </style>
+
+    {% set form_errors = form.vars.errors %}
+    {% if form_errors|length > 0 %}
+        <div class="alert alert-danger mb-3 border-0 rounded">
+            <strong>Erreurs :</strong>
+            {{ form_errors(form) }}
+        </div>
+    {% endif %}
+
+    <div class="form-group mb-3">
+        {{ form_label(form.patient, 'Patient', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.patient, {'attr': {'class': 'form-control form-select'}}) }}
+        {{ form_errors(form.patient) }}
+    </div>
+
+    <div class="form-group mb-3">
+        {{ form_label(form.psychologue, 'Psychologue', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.psychologue, {'attr': {'class': 'form-control form-select'}}) }}
+        {{ form_errors(form.psychologue) }}
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group mb-4">
+                {{ form_label(form.datePrevue, 'Date/Heure Prévue', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.datePrevue, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.datePrevue) }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group mb-4">
+                {{ form_label(form.dateDispo, 'Date/Heure Disponibilité', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.dateDispo, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.dateDispo) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group mb-4">
+        {{ form_label(form.status, 'Statut', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.status, {'attr': {'class': 'form-control form-select'}}) }}
+        {{ form_errors(form.status) }}
+    </div>
+
+    <div class="d-flex gap-2 pt-3">
+        <button class="btn btn-submit" type="submit">
+            <i class="bi bi-check-circle me-2"></i>{{ button_label|default('Enregistrer') }}
+        </button>
+        <a href="{{ path('app_reservation_back_index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-x-circle me-2"></i>Annuler
+        </a>
+    </div>
+{{ form_end(form) }}
+
+

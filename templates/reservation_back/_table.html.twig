@@ -1,0 +1,74 @@
+<div class="table-responsive">
+    <table class="table table-sm table-hover mb-0">
+        <thead>
+            <tr>
+                <th>Patient</th>
+                <th>Psychologue</th>
+                <th>Date/Heure</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reservation in reservations %}
+            <tr>
+                <td>
+                    {% if reservationData[reservation.id].patient %}
+                        <div style="font-weight: 600;">{{ reservationData[reservation.id].patient.prenom }} {{ reservationData[reservation.id].patient.nom }}</div>
+                        <small class="text-muted">{{ reservationData[reservation.id].patient.email }}</small>
+                    {% else %}
+                        ID: {{ reservation.idPatient }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if reservationData[reservation.id].psychologue %}
+                        <div style="font-weight: 600;">Dr. {{ reservationData[reservation.id].psychologue.prenom }} {{ reservationData[reservation.id].psychologue.nom }}</div>
+                        <small class="text-muted">{{ reservationData[reservation.id].psychologue.email }}</small>
+                    {% else %}
+                        ID: {{ reservation.idPsychologue }}
+                    {% endif %}
+                </td>
+                <td>
+                    <strong>{{ reservation.datePrevue|date('d/m/Y H:i') }}</strong>
+                </td>
+                <td>
+                    {% if reservation.status == 'en attente' %}
+                        <span class="badge bg-warning">{{ reservation.status }}</span>
+                    {% elseif reservation.status == 'confirmé' %}
+                        <span class="badge bg-success">{{ reservation.status }}</span>
+                    {% else %}
+                        <span class="badge bg-danger">{{ reservation.status }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if reservation.status == 'en attente' %}
+                        <form method="POST" class="d-inline me-2">
+                            <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ reservation.id) }}">
+                            <button type="submit" formaction="{{ path('app_reservation_back_accept', {'id': reservation.id}) }}"
+                                    class="btn btn-sm btn-success" title="Accepter">
+                                <i class="bi bi-check-circle"></i> Accepter
+                            </button>
+                        </form>
+                        <form method="POST" class="d-inline me-2">
+                            <input type="hidden" name="_token" value="{{ csrf_token('refuse' ~ reservation.id) }}">
+                            <button type="submit" formaction="{{ path('app_reservation_back_refuse', {'id': reservation.id}) }}"
+                                    class="btn btn-sm btn-danger" title="Refuser">
+                                <i class="bi bi-x-circle"></i> Refuser
+                            </button>
+                        </form>
+                    {% endif %}
+                    <a href="{{ path('app_reservation_back_show', {'id': reservation.id}) }}"
+                       class="btn btn-sm btn-outline-info">
+                        <i class="bi bi-eye"></i> Voir
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+<div class="mt-4">
+    {{ knp_pagination_render(reservations) }}
+</div>
