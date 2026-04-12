@@ -14,35 +14,67 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/admin/event')]
 class AdminEventController extends AbstractController
 {
-    #[Route('/', name: 'admin_event_index', methods: ['GET'])]
+    #[Route('/', name: 'admin_event_index')]
     public function index(Request $request, EvenementRepository $repo): Response
     {
         $q = $request->query->get('q');
-        $sort = $request->query->get('sort', 'date');
+        $status = $request->query->get('status');
+        $sort = $request->query->get('sort', 'dateEvent');
+        $direction = $request->query->get('direction', 'asc');
+        $page = max(1, $request->query->getInt('page', 1));
 
-        $query = $repo->createQueryBuilder('e');
+        $limit = 3;
+        $offset = ($page - 1) * $limit;
+
+        $qb = $repo->createQueryBuilder('e');
 
         // 🔍 recherche
         if ($q) {
-            $query->where('e.titre LIKE :q OR e.lieu LIKE :q')
-                  ->setParameter('q', '%'.$q.'%');
+            $qb->andWhere('e.titre LIKE :q OR e.lieu LIKE :q')
+               ->setParameter('q', "%$q%");
         }
 
-        // 🔃 tri
-        if ($sort === 'date') {
-            $query->orderBy('e.dateEvent', 'ASC');
-        } elseif ($sort === 'titre') {
-            $query->orderBy('e.titre', 'ASC');
+        // 🎯 filtre statut
+        if ($status) {
+            $qb->andWhere('e.statut = :status')
+               ->setParameter('status', $status);
         }
 
-        $evenements = $query->getQuery()->getResult();
+        // 🔄 tri sécurisé
+        $allowedSorts = ['titre', 'dateEvent', 'statut'];
+        if (!in_array($sort, $allowedSorts)) {
+            $sort = 'dateEvent';
+        }
+
+        $qb->orderBy("e.$sort", $direction)
+           ->setFirstResult($offset)
+           ->setMaxResults($limit);
+
+        $evenements = $qb->getQuery()->getResult();
+
+        // 🔢 pagination propre
+        $total = $repo->createQueryBuilder('e')
+            ->select('COUNT(e.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $pages = ceil($total / $limit);
+
+        // ⚡ AJAX → seulement la table
+        if ($request->isXmlHttpRequest()) {
+            return $this->render('admin/template/admin_event/_table.html.twig', [
+                'evenements' => $evenements,
+                'pages' => $pages
+            ]);
+        }
 
         return $this->render('admin/template/admin_event/index.html.twig', [
             'evenements' => $evenements,
+            'pages' => $pages
         ]);
     }
 
-    #[Route('/new', name: 'admin_event_new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'admin_event_new')]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $evenement = new Evenement();
@@ -51,7 +83,6 @@ class AdminEventController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            // statut automatique
             $evenement->setStatut('en_attente');
 
             $em->persist($evenement);
@@ -67,7 +98,7 @@ class AdminEventController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'admin_event_show', methods: ['GET'])]
+    #[Route('/show/{id}', name: 'admin_event_show')]
     public function show(Evenement $evenement): Response
     {
         return $this->render('admin/template/admin_event/show.html.twig', [
@@ -75,7 +106,7 @@ class AdminEventController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'admin_event_edit', methods: ['GET', 'POST'])]
+    #[Route('/edit/{id}', name: 'admin_event_edit')]
     public function edit(Request $request, Evenement $evenement, EntityManagerInterface $em): Response
     {
         $form = $this->createForm(EvenementType::class, $evenement);
@@ -94,8 +125,17 @@ class AdminEventController extends AbstractController
             'evenement' => $evenement,
         ]);
     }
-
-    #[Route('/{id}', name: 'admin_event_delete', methods: ['POST'])]
+#[Route('/stats', name: 'admin_event_stats')]
+public function stats(EvenementRepository $repo): Response
+{
+    return $this->json([
+        'total' => $repo->count([]),
+        'valide' => $repo->count(['statut' => 'validé']),
+        'attente' => $repo->count(['statut' => 'en_attente']),
+        'refuse' => $repo->count(['statut' => 'refusé']),
+    ]);
+}
+    #[Route('/delete/{id}', name: 'admin_event_delete', methods: ['POST'])]
     public function delete(Request $request, Evenement $evenement, EntityManagerInterface $em): Response
     {
         if ($this->isCsrfTokenValid('delete'.$evenement->getId(), $request->request->get('_token'))) {

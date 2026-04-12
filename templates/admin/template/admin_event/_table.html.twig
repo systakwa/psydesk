@@ -1,0 +1,41 @@
+{% for evenement in evenements %}
+
+<tr>
+    <td>{{ evenement.titre }}</td>
+    <td>{{ evenement.dateEvent ? evenement.dateEvent|date('d/m/Y') }}</td>
+    <td>{{ evenement.lieu }}</td>
+    <td>{{ evenement.type }}</td>
+
+
+<td>
+    <span class="badge bg-{{ evenement.statut == 'actif' ? 'success' : 'secondary' }}">
+        {{ evenement.statut }}
+    </span>
+</td>
+
+<td>
+    <a href="{{ path('admin_event_show', {'id': evenement.id}) }}">👁</a>
+    <a href="{{ path('admin_event_edit', {'id': evenement.id}) }}">✏️</a>
+</td>
+
+
+</tr>
+{% else %}
+<tr>
+    <td colspan="6" class="text-center">Aucun événement</td>
+</tr>
+{% endfor %}
+
+<!-- PAGINATION -->
+
+<tr>
+    <td colspan="6">
+        <ul class="pagination justify-content-center">
+            {% for i in 1..pages %}
+                <li class="page-item">
+                    <a href="#" class="page-link" data-page="{{ i }}">{{ i }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </td>
+</tr>

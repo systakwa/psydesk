@@ -31,7 +31,7 @@
         <!-- CARDS -->
         <div class="row g-4">
 
-        {% for evenement in evenements %}
+         {% for evenement in evenements %}
             <div class="col-md-6 col-lg-4">
 
                 <div class="card h-100 shadow-sm">
@@ -78,9 +78,70 @@
             </div>
         {% endfor %}
 
-        </div> {# END ROW #}
+        </div>
+         <!-- CALENDRIER -->
+
+<div class="mt-5">
+    <h2 class="text-center mb-4">📅 Calendrier des événements</h2>
+
+
+<div id="calendar"></div>
+
+
+</div>
+{# END ROW #}
 
     </div>
 </section>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    let calendarEl = document.getElementById('calendar');
+
+    let calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+
+        events: '/front/event/calendar',
+
+        eventClick: function(info) {
+
+            let eventId = info.event.id;
+
+            let html = `
+                <div style="padding:15px; text-align:center;">
+                    <h5>${info.event.title}</h5>
+                    <a href="/front/participation/participer/${eventId}" 
+                       class="btn btn-success mt-3">
+                       Participer
+                    </a>
+                </div>
+            `;
+
+            let popup = document.createElement("div");
+            popup.innerHTML = html;
+
+            popup.style.position = "fixed";
+            popup.style.top = "50%";
+            popup.style.left = "50%";
+            popup.style.transform = "translate(-50%, -50%)";
+            popup.style.background = "white";
+            popup.style.padding = "20px";
+            popup.style.borderRadius = "10px";
+            popup.style.boxShadow = "0 0 15px rgba(0,0,0,0.3)";
+            popup.style.zIndex = "9999";
+
+            document.body.appendChild(popup);
+
+            // fermer en cliquant
+            popup.addEventListener("click", () => popup.remove());
+        }
+
+    }); // ✅ fermeture manquante ici
+
+    calendar.render();
+
+});
+</script>
+
 
 {% endblock %}

@@ -44,7 +44,23 @@ public function index(Request $request, EvenementRepository $repo): Response
         'evenements' => $evenements,
     ]);
 }
+#[Route('/calendar', name: 'admin_event_calendar')]
+public function calendar(EvenementRepository $repo): Response
+{
+    $events = $repo->findAll();
 
+    $data = [];
+
+    foreach ($events as $event) {
+        $data[] = [
+            'title' => $event->getTitre(),
+            'start' => $event->getDateEvent()->format('Y-m-d'),
+            'id' => $event->getId(), // 🔥 IMPORTANT
+        ];
+    }
+
+    return $this->json($data);
+}
     #[Route('/new', name: 'app_event_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, EvenementRepository $repo): Response
     {
