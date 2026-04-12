@@ -4,6 +4,7 @@
 
 {% block stylesheets %}
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet">
 <style>
     * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #f5f7fb; }
@@ -16,27 +17,28 @@
         height: 100%;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         z-index: 1000;
+        transition: transform 0.3s ease;
     }
     .sidebar .logo { padding: 25px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
     .sidebar .logo h2 { color: white; font-weight: 700; }
     .sidebar .nav-item { margin: 8px 15px; border-radius: 12px; }
-    .sidebar .nav-item a { padding: 12px 20px; display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.8); text-decoration: none; border-radius: 12px; }
+    .sidebar .nav-item a { padding: 12px 20px; display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.8); text-decoration: none; border-radius: 12px; transition: all 0.3s; }
     .sidebar .nav-item a:hover, .sidebar .nav-item.active a { background: rgba(255,255,255,0.15); color: white; }
     
     .main-content { margin-left: 280px; padding: 25px 30px; }
     
     .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
     .page-title h1 { font-size: 28px; font-weight: 700; color: #1e293b; margin-bottom: 5px; }
-    .user-info { display: flex; align-items: center; gap: 15px; background: white; padding: 8px 20px; border-radius: 50px; }
-    .user-avatar { width: 45px; height: 45px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+    .user-info { display: flex; align-items: center; gap: 15px; background: white; padding: 8px 20px; border-radius: 50px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .user-avatar { width: 45px; height: 45px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px; }
     
     .profile-card {
         background: white;
         border-radius: 20px;
         padding: 35px;
-        max-width: 600px;
+        max-width: 650px;
         margin: 0 auto;
-        box-shadow: 0 10px 25px rgba(174, 72, 140, 0.1);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     }
     
     .profile-avatar {
@@ -61,7 +63,7 @@
         display: block;
         margin-bottom: 8px;
         font-weight: 600;
-        color: #bf61c1;
+        color: #4a5568;
     }
     
     .form-control {
@@ -74,13 +76,18 @@
     }
     
     .form-control:focus {
-        border-color: #bd12a9;
+        border-color: #667eea;
         outline: none;
         box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
     }
     
+    .form-control:disabled, .form-control[readonly] {
+        background-color: #f7fafc;
+        cursor: not-allowed;
+    }
+    
     .btn-save {
-        background: linear-gradient(135deg, #c03fa4 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
         padding: 14px;
@@ -98,7 +105,7 @@
     }
     
     .btn-cancel {
-        background: #ca44ef;
+        background: #64748b;
         color: white;
         border: none;
         padding: 14px;
@@ -111,27 +118,76 @@
         text-decoration: none;
         text-align: center;
         display: inline-block;
+        transition: all 0.3s;
+    }
+    
+    .btn-cancel:hover {
+        background: #475569;
+        transform: translateY(-2px);
     }
     
     .alert-success {
-        background: #934a9b;
-        color: #b527ad;
+        background: #d1fae5;
+        color: #065f46;
         padding: 12px;
         border-radius: 10px;
         margin-bottom: 20px;
+        border-left: 4px solid #10b981;
     }
     
     .alert-danger {
         background: #fee2e2;
-        color: #a53f8c;
+        color: #991b1b;
         padding: 12px;
         border-radius: 10px;
         margin-bottom: 20px;
+        border-left: 4px solid #ef4444;
     }
+    
+    hr {
+        margin: 25px 0;
+        border: none;
+        border-top: 2px solid #e2e8f0;
+    }
+    
+    h4 {
+        color: #1e293b;
+        margin-bottom: 20px;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .password-requirements {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 5px;
+    }
+    
+    .password-strength {
+        height: 4px;
+        background: #e2e8f0;
+        border-radius: 2px;
+        margin-top: 8px;
+    }
+    
+    .password-strength-bar {
+        height: 100%;
+        border-radius: 2px;
+        width: 0%;
+        transition: all 0.3s;
+    }
+    
+    .strength-weak { background: #ef4444; width: 33%; }
+    .strength-medium { background: #f59e0b; width: 66%; }
+    .strength-strong { background: #10b981; width: 100%; }
     
     @media (max-width: 768px) {
         .sidebar { transform: translateX(-100%); }
+        .sidebar.active { transform: translateX(0); }
         .main-content { margin-left: 0; }
+        .profile-card { padding: 20px; }
     }
 </style>
 {% endblock %}
@@ -139,14 +195,14 @@
 {% block body %}
 <div class="sidebar">
     <div class="logo">
-        <h2>{% if 'ROLE_PSYCHOLOGUE' in user.role %}PSYDESK{% else %}❤️ psydesk health mental{% endif %}</h2>
+        <h2>PSYDESK</h2>
     </div>
     <div class="nav-menu">
         <div class="nav-item">
             <a href="
-                {% if 'ROLE_ADMIN' in user.role %}
+                {% if 'ROLE_ADMIN' in user.roles %}
                     {{ path('app_admin_dashboard') }}
-                {% elseif 'ROLE_PSYCHOLOGUE' in user.role %}
+                {% elseif 'ROLE_PSYCHOLOGUE' in user.roles %}
                     {{ path('app_psychologue_dashboard') }}
                 {% else %}
                     {{ path('app_patient_dashboard') }}
@@ -175,7 +231,15 @@
             <p>Modifiez vos informations personnelles</p>
         </div>
         <div class="user-info">
-            <span>{% if 'ROLE_PSYCHOLOGUE' in user.role %}Psychologue{% elseif 'ROLE_ADMIN' in user.role %}Administrateur{% else %}Patient{% endif %}</span>
+            <span>
+                {% if 'ROLE_PSYCHOLOGUE' in user.roles %}
+                    Psychologue
+                {% elseif 'ROLE_ADMIN' in user.roles %}
+                    Administrateur
+                {% else %}
+                    Patient
+                {% endif %}
+            </span>
             <div class="user-avatar">{{ user.prenom|first|upper }}{{ user.nom|first|upper }}</div>
         </div>
     </div>
@@ -184,20 +248,28 @@
         <div class="profile-avatar">{{ user.prenom|first|upper }}{{ user.nom|first|upper }}</div>
         <h3 style="text-align: center; margin-bottom: 5px;">{{ user.fullName }}</h3>
         <p style="text-align: center; color: #64748b; margin-bottom: 25px;">
-            {% if 'ROLE_PSYCHOLOGUE' in user.role %}Psychologue
-            {% elseif 'ROLE_ADMIN' in user.role %}Administrateur
-            {% else %}Patient{% endif %}
+            {% if 'ROLE_PSYCHOLOGUE' in user.roles %}
+                Psychologue
+            {% elseif 'ROLE_ADMIN' in user.roles %}
+                Administrateur
+            {% else %}
+                Patient
+            {% endif %}
         </p>
         
         {% for message in app.flashes('success') %}
-            <div class="alert-success">{{ message }}</div>
+            <div class="alert-success">
+                <i class="ri-checkbox-circle-line"></i> {{ message }}
+            </div>
         {% endfor %}
         
         {% for message in app.flashes('error') %}
-            <div class="alert-danger">{{ message }}</div>
+            <div class="alert-danger">
+                <i class="ri-error-warning-line"></i> {{ message }}
+            </div>
         {% endfor %}
         
-        <form method="post">
+        <form method="post" id="profileForm">
             <div class="form-group">
                 <label>Nom</label>
                 <input type="text" name="nom" value="{{ user.nom }}" class="form-control" required>
@@ -218,41 +290,133 @@
                 <input type="email" name="email" value="{{ user.email }}" class="form-control" required>
             </div>
             
-            <hr style="margin: 25px 0;">
+            <hr>
             
-            <h4 style="margin-bottom: 20px;"> Changer le mot de passe</h4>
+            <h4>
+                <i class="ri-lock-password-line"></i> 
+                Changer le mot de passe
+            </h4>
             
             <div class="form-group">
-                <label>Mot de passe actuel</label>
-                <input type="password" name="current_password" class="form-control" placeholder="Entrez votre mot de passe actuel">
+                <label>Mot de passe actuel <span style="color: #ef4444;">*</span></label>
+                <input type="password" id="current_password" name="current_password" class="form-control" placeholder="Entrez votre mot de passe actuel">
+                <small class="password-requirements">Requis uniquement si vous souhaitez changer votre mot de passe</small>
             </div>
             
             <div class="form-group">
                 <label>Nouveau mot de passe</label>
-                <input type="password" name="new_password" class="form-control" placeholder="Minimum 6 caractères">
+                <input type="password" id="new_password" name="new_password" class="form-control" placeholder="Minimum 6 caractères" minlength="6">
+                <div class="password-strength">
+                    <div class="password-strength-bar" id="passwordStrength"></div>
+                </div>
+                <div class="password-requirements">
+                    <i class="ri-information-line"></i> Minimum 6 caractères
+                </div>
             </div>
             
             <div class="form-group">
                 <label>Confirmer le nouveau mot de passe</label>
-                <input type="password" name="confirm_password" class="form-control" placeholder="Confirmez votre nouveau mot de passe">
+                <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="Confirmez votre nouveau mot de passe">
             </div>
             
             <button type="submit" class="btn-save">
-                 Enregistrer les modifications
+                <i class="ri-save-line"></i> Enregistrer les modifications
             </button>
             
             <a href="
-                {% if 'ROLE_ADMIN' in user.role %}
+                {% if 'ROLE_ADMIN' in user.roles %}
                     {{ path('app_admin_dashboard') }}
-                {% elseif 'ROLE_PSYCHOLOGUE' in user.role %}
+                {% elseif 'ROLE_PSYCHOLOGUE' in user.roles %}
                     {{ path('app_psychologue_dashboard') }}
                 {% else %}
                     {{ path('app_patient_dashboard') }}
                 {% endif %}
             " class="btn-cancel">
-                 Annuler
+                <i class="ri-close-line"></i> Annuler
             </a>
         </form>
     </div>
 </div>
+
+<script>
+    // Indicateur de force du mot de passe
+    const newPassword = document.getElementById('new_password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const strengthBar = document.getElementById('passwordStrength');
+    
+    function evaluatePasswordStrength(password) {
+        let strength = 0;
+        
+        if (password.length >= 6) strength++;
+        if (password.length >= 8) strength++;
+        if (password.match(/[a-z]+/)) strength++;
+        if (password.match(/[A-Z]+/)) strength++;
+        if (password.match(/[0-9]+/)) strength++;
+        if (password.match(/[$@#&!]+/)) strength++;
+        
+        strengthBar.classList.remove('strength-weak', 'strength-medium', 'strength-strong');
+        
+        if (password.length === 0) {
+            strengthBar.style.width = '0%';
+        } else if (strength <= 2) {
+            strengthBar.classList.add('strength-weak');
+        } else if (strength <= 4) {
+            strengthBar.classList.add('strength-medium');
+        } else {
+            strengthBar.classList.add('strength-strong');
+        }
+    }
+    
+    if (newPassword) {
+        newPassword.addEventListener('input', function() {
+            evaluatePasswordStrength(this.value);
+            
+            if (confirmPassword.value !== '' && this.value !== confirmPassword.value) {
+                confirmPassword.setCustomValidity('Les mots de passe ne correspondent pas');
+            } else {
+                confirmPassword.setCustomValidity('');
+            }
+        });
+    }
+    
+    if (confirmPassword) {
+        confirmPassword.addEventListener('input', function() {
+            if (this.value !== newPassword.value) {
+                this.setCustomValidity('Les mots de passe ne correspondent pas');
+                this.style.borderColor = '#ef4444';
+            } else {
+                this.setCustomValidity('');
+                this.style.borderColor = '#10b981';
+            }
+        });
+    }
+    
+    // Validation avant soumission
+    document.getElementById('profileForm')?.addEventListener('submit', function(e) {
+        const currentPwd = document.getElementById('current_password')?.value;
+        const newPwd = document.getElementById('new_password')?.value;
+        const confirmPwd = document.getElementById('confirm_password')?.value;
+        
+        // Si un nouveau mot de passe est saisi, l'ancien doit être rempli
+        if (newPwd && !currentPwd) {
+            e.preventDefault();
+            alert('Veuillez entrer votre mot de passe actuel pour modifier votre mot de passe.');
+            return false;
+        }
+        
+        // Vérifier la correspondance des mots de passe
+        if (newPwd && newPwd !== confirmPwd) {
+            e.preventDefault();
+            alert('Les nouveaux mots de passe ne correspondent pas !');
+            return false;
+        }
+        
+        // Vérifier la longueur du nouveau mot de passe
+        if (newPwd && newPwd.length < 6) {
+            e.preventDefault();
+            alert('Le nouveau mot de passe doit contenir au moins 6 caractères !');
+            return false;
+        }
+    });
+</script>
 {% endblock %}

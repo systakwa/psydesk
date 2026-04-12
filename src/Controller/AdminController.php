@@ -74,7 +74,7 @@ class AdminController extends AbstractController
         $user = $entityManager->getRepository(Users::class)->find($id);
         
         if (!$user) {
-            $this->addFlash('error', '❌ Utilisateur non trouvé');
+            $this->addFlash('error', ' Utilisateur non trouvé');
             return $this->redirectToRoute('app_admin_dashboard');
         }
         
@@ -117,7 +117,7 @@ class AdminController extends AbstractController
             $entityManager->persist($history);
             $entityManager->flush();
             
-            $this->addFlash('success', '✅ Utilisateur modifié avec succès !');
+            $this->addFlash('success', ' Utilisateur modifié avec succès !');
             return $this->redirectToRoute('app_admin_dashboard');
         }
         
@@ -132,12 +132,12 @@ class AdminController extends AbstractController
         $user = $entityManager->getRepository(Users::class)->find($id);
         
         if (!$user) {
-            $this->addFlash('error', '❌ Utilisateur non trouvé');
+            $this->addFlash('error', ' Utilisateur non trouvé');
             return $this->redirectToRoute('app_admin_dashboard');
         }
         
         if ($user->getId() === $this->getUser()->getId()) {
-            $this->addFlash('error', '⚠️ Vous ne pouvez pas supprimer votre propre compte');
+            $this->addFlash('error', ' Vous ne pouvez pas supprimer votre propre compte');
             return $this->redirectToRoute('app_admin_dashboard');
         }
         
@@ -160,7 +160,7 @@ class AdminController extends AbstractController
         $entityManager->remove($user);
         $entityManager->flush();
         
-        $this->addFlash('success', '🗑️ Utilisateur supprimé avec succès');
+        $this->addFlash('success', ' Utilisateur supprimé avec succès');
         return $this->redirectToRoute('app_admin_dashboard');
     }
 }

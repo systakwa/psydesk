@@ -2,6 +2,7 @@
 // src/Controller/AuthController.php
 
 namespace App\Controller;
+
 use App\Entity\Users;
 use App\Entity\UserHistory;
 use App\Form\RegistrationFormType;
@@ -14,6 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Mime\Address;
 use App\Repository\ReclamationRepository;
 
 class AuthController extends AbstractController
@@ -21,19 +23,18 @@ class AuthController extends AbstractController
     #[Route('/', name: 'app_home')]
     public function home(): Response
     {
+        // Toujours rediriger vers la page de login
         return $this->redirectToRoute('app_login');
     }
 
     #[Route('/login', name: 'app_login')]
-    public function login(AuthenticationUtils $authenticationUtils, Request $request, EntityManagerInterface $entityManager): Response
+    public function login(AuthenticationUtils $authenticationUtils): Response
     {
+        // PLUS DE REDIRECTION AUTOMATIQUE VERS DASHBOARD
+        // La page de login est toujours accessible, même si l'utilisateur est connecté
+        
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
-       
-        // Si l'utilisateur est déjà connecté, rediriger vers le dashboard
-        if ($this->getUser()) {
-            return $this->redirectToRoute('app_dashboard');
-        }
         
         return $this->render('auth/login.html.twig', [
             'last_username' => $lastUsername,
@@ -83,7 +84,7 @@ class AuthController extends AbstractController
             $entityManager->flush();
 
             $roleName = $selectedRole === Users::ROLE_ADMIN ? 'Administrateur' : ($selectedRole === Users::ROLE_PSYCHOLOGUE ? 'Psychologue' : 'Patient');
-            $this->addFlash('success', ' Votre compte a été créé avec succès ! Vous êtes inscrit en tant que ' . $roleName . '.');
+            $this->addFlash('success', '✅ Votre compte a été créé avec succès ! Vous êtes inscrit en tant que ' . $roleName . '.');
             
             return $this->redirectToRoute('app_login');
         }
@@ -98,20 +99,27 @@ class AuthController extends AbstractController
     {
         if ($request->isMethod('POST')) {
             $email = $request->request->get('email');
+            $oldPassword = $request->request->get('old_password');
             $newPassword = $request->request->get('password');
             $confirmPassword = $request->request->get('confirm_password');
             
             $user = $entityManager->getRepository(Users::class)->findOneBy(['email' => $email]);
             
             if (!$user) {
-                $this->addFlash('error', ' Aucun compte trouvé avec cet email.');
+                $this->addFlash('error', '❌ Aucun compte trouvé avec cet email.');
+                return $this->redirectToRoute('app_reset_password');
+            }
+            
+            // Vérifier l'ancien mot de passe
+            if (!$passwordHasher->isPasswordValid($user, $oldPassword)) {
+                $this->addFlash('error', '❌ L\'ancien mot de passe est incorrect.');
                 return $this->redirectToRoute('app_reset_password');
             }
             
             if (empty($newPassword) || strlen($newPassword) < 6) {
-                $this->addFlash('error', ' Le mot de passe doit contenir au moins 6 caractères.');
+                $this->addFlash('error', '❌ Le nouveau mot de passe doit contenir au moins 6 caractères.');
             } elseif ($newPassword !== $confirmPassword) {
-                $this->addFlash('error', ' Les mots de passe ne correspondent pas.');
+                $this->addFlash('error', '❌ Les nouveaux mots de passe ne correspondent pas.');
             } else {
                 $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
                 $user->setPassword($hashedPassword);
@@ -123,7 +131,7 @@ class AuthController extends AbstractController
                 $history->setActionType('reset_password');
                 $history->setFieldName('password');
                 $history->setOldValue(null);
-                $history->setNewValue("Réinitialisation du mot de passe pour l'utilisateur {$user->getFullName()} (ID: {$user->getId()})");
+                $history->setNewValue("Changement du mot de passe pour l'utilisateur {$user->getFullName()} (ID: {$user->getId()})");
                 $history->setModifiedBy($user->getId());
                 $history->setIpAddress($request->getClientIp());
                 $history->setUserAgent($request->headers->get('User-Agent'));
@@ -131,17 +139,22 @@ class AuthController extends AbstractController
                 $entityManager->persist($history);
                 $entityManager->flush();
                 
+                // Envoyer l'email de confirmation avec Gmail
                 $emailMessage = (new Email())
-                    ->from('noreply@psydesk.com')
+                    ->from(new Address('takwataboui09@gmail.com', 'PSYDESK Support'))
                     ->to($email)
-                    ->subject(' Votre mot de passe a été réinitialisé')
+                    ->subject('✅ Votre mot de passe a été modifié')
                     ->html($this->renderView('emails/reset_password_confirmation.html.twig', [
                         'user' => $user,
                     ]));
                 
-                $mailer->send($emailMessage);
+                try {
+                    $mailer->send($emailMessage);
+                    $this->addFlash('success', '✅ Votre mot de passe a été modifié avec succès. Un email de confirmation vous a été envoyé.');
+                } catch (\Exception $e) {
+                    $this->addFlash('success', '✅ Votre mot de passe a été modifié avec succès.');
+                }
                 
-                $this->addFlash('success', ' Votre mot de passe a été réinitialisé avec succès. Un email de confirmation vous a été envoyé.');
                 return $this->redirectToRoute('app_login');
             }
         }
@@ -158,11 +171,11 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
         
-        $role= $user->getRoles();
+        $roles = $user->getRoles();
         
-        if (in_array('ROLE_ADMIN', $role)) {
+        if (in_array('ROLE_ADMIN', $roles)) {
             return $this->redirectToRoute('app_admin_dashboard');
-        } elseif (in_array('ROLE_PSYCHOLOGUE', $role)) {
+        } elseif (in_array('ROLE_PSYCHOLOGUE', $roles)) {
             return $this->redirectToRoute('app_psychologue_dashboard');
         } else {
             return $this->redirectToRoute('app_patient_dashboard');
@@ -173,15 +186,12 @@ class AuthController extends AbstractController
     public function patientDashboard(): Response
     {
         $user = $this->getUser();
-         $nomComplet = $user ? $user->getPrenom() . ' ' . $user->getNom() : 'Invité';
         
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
         
         return $this->render('dashboard_p/index.html.twig', [
-        //return $this->render('dashboard/admin.html.twig', [
-        
             'user' => $user,
         ]);
     }
@@ -211,7 +221,6 @@ class AuthController extends AbstractController
         
         return $this->render('dashboard/psychologue_statistiques.html.twig', [
             'user' => $user,
-            
         ]);
     }
 
@@ -247,44 +256,67 @@ class AuthController extends AbstractController
             $age = $request->request->get('age');
             $email = $request->request->get('email');
             
-            $user->setNom($nom);
-            $user->setPrenom($prenom);
-            $user->setAge($age);
-            $user->setEmail($email);
+            // Mise à jour des informations personnelles
+            if ($nom) $user->setNom($nom);
+            if ($prenom) $user->setPrenom($prenom);
+            if ($age) $user->setAge($age);
+            if ($email) $user->setEmail($email);
             
             $currentPassword = $request->request->get('current_password');
             $newPassword = $request->request->get('new_password');
             $confirmPassword = $request->request->get('confirm_password');
             
-            if (!empty($newPassword)) {
-                if ($passwordHasher->isPasswordValid($user, $currentPassword)) {
-                    if ($newPassword === $confirmPassword && strlen($newPassword) >= 6) {
-                        $user->setPassword($passwordHasher->hashPassword($user, $newPassword));
-                        $this->addFlash('success', ' Mot de passe mis à jour avec succès.');
-                        
-                        // Enregistrer dans l'historique
-                        $history = new UserHistory();
-                        $history->setUserId($user->getId());
-                        $history->setActionType('edit');
-                        $history->setFieldName('password');
-                        $history->setOldValue(null);
-                        $history->setNewValue("Changement du mot de passe pour l'utilisateur {$user->getFullName()}");
-                        $history->setModifiedBy($user->getId());
-                        $history->setIpAddress($request->getClientIp());
-                        $history->setUserAgent($request->headers->get('User-Agent'));
-                        $history->setCreatedAt(new \DateTime());
-                        $entityManager->persist($history);
-                        $entityManager->flush();
-                    } else {
-                        $this->addFlash('error', ' Le nouveau mot de passe doit contenir au moins 6 caractères et correspondre à la confirmation.');
-                    }
-                } else {
-                    $this->addFlash('error', ' Le mot de passe actuel est incorrect.');
+            $passwordChanged = false;
+            
+            // Gestion du changement de mot de passe
+            if (!empty($newPassword) || !empty($currentPassword)) {
+                // Vérifier que l'ancien mot de passe est fourni
+                if (empty($currentPassword)) {
+                    $this->addFlash('error', '❌ Veuillez entrer votre mot de passe actuel pour modifier votre mot de passe.');
+                }
+                // Vérifier que le nouveau mot de passe est fourni
+                elseif (empty($newPassword)) {
+                    $this->addFlash('error', '❌ Veuillez entrer un nouveau mot de passe.');
+                }
+                // Vérifier que l'ancien mot de passe est correct
+                elseif (!$passwordHasher->isPasswordValid($user, $currentPassword)) {
+                    $this->addFlash('error', '❌ Le mot de passe actuel est incorrect.');
+                }
+                // Vérifier la longueur du nouveau mot de passe
+                elseif (strlen($newPassword) < 6) {
+                    $this->addFlash('error', '❌ Le nouveau mot de passe doit contenir au moins 6 caractères.');
+                }
+                // Vérifier la correspondance des mots de passe
+                elseif ($newPassword !== $confirmPassword) {
+                    $this->addFlash('error', '❌ Les nouveaux mots de passe ne correspondent pas.');
+                }
+                // Tout est bon, on change le mot de passe
+                else {
+                    $user->setPassword($passwordHasher->hashPassword($user, $newPassword));
+                    $passwordChanged = true;
+                    $this->addFlash('success', '✅ Mot de passe mis à jour avec succès.');
+                    
+                    // Enregistrer dans l'historique
+                    $history = new UserHistory();
+                    $history->setUserId($user->getId());
+                    $history->setActionType('edit');
+                    $history->setFieldName('password');
+                    $history->setOldValue(null);
+                    $history->setNewValue("Changement du mot de passe pour l'utilisateur {$user->getFullName()}");
+                    $history->setModifiedBy($user->getId());
+                    $history->setIpAddress($request->getClientIp());
+                    $history->setUserAgent($request->headers->get('User-Agent'));
+                    $history->setCreatedAt(new \DateTime());
+                    $entityManager->persist($history);
                 }
             }
             
+            // Enregistrer les modifications
             $entityManager->flush();
-            $this->addFlash('success', ' Votre profil a été mis à jour avec succès.');
+            
+            if (!$passwordChanged) {
+                $this->addFlash('success', '✅ Votre profil a été mis à jour avec succès.');
+            }
             
             return $this->redirectToRoute('app_profile');
         }
@@ -294,22 +326,7 @@ class AuthController extends AbstractController
         ]);
     }
 
-    
-
-     /*#[Route('/dashboard/patient', name: 'app_dashboard_patient')]
-    public function patientDashboard(): Response
-    {
-        $user = $this->getUser(); // Récupère l'utilisateur connecté
-        $nomComplet = $user ? $user->getPrenom() . ' ' . $user->getNom() : 'Invité';
-        
-        return $this->render('dashboard_p/index.html.twig', [
-            'nom' => $nomComplet,
-        ]);
-    }*/
-
-
-        #[Route('/dashboard/reclamation', name: 'app_reclamation')]
-     //#[Route('/admin/all', name: 'app_reclamation_admin_all', methods: ['GET'])]
+    #[Route('/dashboard/reclamation', name: 'app_reclamation')]
     public function indexAll(ReclamationRepository $reclamationRepository): Response
     {
         $reclamations = $reclamationRepository->findAll();
@@ -318,5 +335,4 @@ class AuthController extends AbstractController
             'reclamations' => $reclamations,
         ]);
     }
-    
 }

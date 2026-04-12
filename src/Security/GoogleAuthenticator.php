@@ -2,34 +2,39 @@
 
 namespace App\Security;
 
-use App\Entity\Users;  // ← Changement ici (User → Users)
+use App\Entity\Users;
 use Doctrine\ORM\EntityManagerInterface;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use KnpU\OAuth2ClientBundle\Security\Authenticator\OAuth2Authenticator;
 use League\OAuth2\Client\Provider\GoogleUser;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
+use Psr\Log\LoggerInterface;
 
 class GoogleAuthenticator extends OAuth2Authenticator implements AuthenticationEntryPointInterface
 {
     private ClientRegistry $clientRegistry;
     private EntityManagerInterface $entityManager;
     private RouterInterface $router;
+    private LoggerInterface $logger;
 
     public function __construct(
         ClientRegistry $clientRegistry, 
         EntityManagerInterface $entityManager,
-        RouterInterface $router
+        RouterInterface $router,
+        LoggerInterface $logger
     ) {
         $this->clientRegistry = $clientRegistry;
         $this->entityManager = $entityManager;
         $this->router = $router;
+        $this->logger = $logger;
     }
 
     public function supports(Request $request): ?bool
@@ -48,34 +53,34 @@ class GoogleAuthenticator extends OAuth2Authenticator implements AuthenticationE
                 $googleUser = $client->fetchUserFromToken($accessToken);
                 
                 $email = $googleUser->getEmail();
+                $googleId = $googleUser->getId();
+                $firstName = $googleUser->getFirstName() ?? '';
+                $lastName = $googleUser->getLastName() ?? '';
                 
-                // Vérifier si l'utilisateur existe (utilisez Users::class)
+                $this->logger->info('Google user data', [
+                    'email' => $email,
+                    'google_id' => $googleId,
+                ]);
+                
                 $existingUser = $this->entityManager->getRepository(Users::class)->findOneBy(['email' => $email]);
                 
                 if ($existingUser) {
-                    // Met à jour le google_id si nécessaire
+                    $this->logger->info('Existing user found', ['user_id' => $existingUser->getId()]);
                     if (!$existingUser->getGoogleId()) {
-                        $existingUser->setGoogleId($googleUser->getId());
+                        $existingUser->setGoogleId($googleId);
                         $this->entityManager->flush();
                     }
                     return $existingUser;
                 }
                 
-                // Créer un nouvel utilisateur
-                $user = new Users();  // ← Changement ici
+                $this->logger->info('Creating new user');
+                $user = new Users();
                 $user->setEmail($email);
-                $user->setGoogleId($googleUser->getId());
-                $user->setRoles([Users::ROLE_PATIENT]);  // ← Utilisez la constante de votre entité
-                
-                // Adapter aux noms de champs de votre entité Users
-                // Votre entité utilise 'prenom' et 'nom', pas 'firstname'/'lastname'
-                $user->setPrenom($googleUser->getFirstName() ?? '');
-                $user->setNom($googleUser->getLastName() ?? '');
-                
-                // Définir un âge par défaut (si le champ est requis)
-                $user->setAge(0);  // Valeur temporaire
-                
-                // Générer un mot de passe aléatoire
+                $user->setGoogleId($googleId);
+                $user->setPrenom($firstName);
+                $user->setNom($lastName);
+                $user->setAge(0);
+                $user->setRoles([Users::ROLE_PATIENT]);
                 $user->setPassword(bin2hex(random_bytes(32)));
                 
                 $this->entityManager->persist($user);
@@ -88,25 +93,38 @@ class GoogleAuthenticator extends OAuth2Authenticator implements AuthenticationE
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        // Rediriger vers la page d'accueil après connexion réussie
-        // Changez 'app_home' par une route qui existe dans votre application
-        // Par exemple : 'app_dashboard', 'home', ou '/'
-        try {
-            return new Response($this->router->generate('app_home'));
-        } catch (\Exception $e) {
-            // Si la route n'existe pas, rediriger vers la page de connexion
-            return new Response($this->router->generate('app_login'));
+        $user = $token->getUser();
+        $roles = $user->getRoles();
+        
+        $this->logger->info('Authentication SUCCESS', [
+            'email' => $user->getEmail(),
+            'roles' => $roles,
+        ]);
+        
+        // Utilisez RedirectResponse avec router->generate() au lieu de redirectToRoute()
+        if (in_array('ROLE_ADMIN', $roles)) {
+            $this->logger->info('Redirecting to ADMIN dashboard');
+            return new RedirectResponse($this->router->generate('app_admin_dashboard'));
+        } elseif (in_array('ROLE_PSYCHOLOGUE', $roles)) {
+            $this->logger->info('Redirecting to PSYCHOLOGUE dashboard');
+            return new RedirectResponse($this->router->generate('app_psychologue_dashboard'));
+        } else {
+            $this->logger->info('Redirecting to PATIENT dashboard');
+            return new RedirectResponse($this->router->generate('app_patient_dashboard'));
         }
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
-        // Rediriger vers la page de connexion en cas d'échec
-        return new Response($this->router->generate('app_login'));
+        $this->logger->error('Authentication FAILURE', [
+            'message' => $exception->getMessage()
+        ]);
+        
+        return new RedirectResponse($this->router->generate('app_login'));
     }
 
     public function start(Request $request, AuthenticationException $authException = null): Response
     {
-        return new Response($this->router->generate('app_login'));
+        return new RedirectResponse($this->router->generate('app_login'));
     }
 }

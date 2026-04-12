@@ -70,7 +70,7 @@ class HistoryController extends AbstractController
         }
         $entityManager->flush();
         
-        $this->addFlash('success', '📜 Historique vidé avec succès !');
+        $this->addFlash('success', ' Historique vidé avec succès !');
         return $this->redirectToRoute('app_history_index');
     }
 }
