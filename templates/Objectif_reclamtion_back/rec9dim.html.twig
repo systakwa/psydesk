@@ -22,16 +22,87 @@
         </div>
     </div>
 
-    <!-- Barre de recherche dynamique -->
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <div class="input-group">
-                <span class="input-group-text bg-primary text-white"><i class="mdi mdi-magnify"></i></span>
-                <input type="text" id="searchInput" class="form-control" placeholder="Rechercher par description, patient, email..." autocomplete="off">
+    <!-- Cartes statistiques (optionnelles) -->
+    <div class="row">
+        <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="d-flex align-items-center align-self-start">
+                                <h3 class="mb-0">$12.34</h3>
+                                <p class="text-success ml-2 mb-0 font-weight-medium">+3.5%</p>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="icon icon-box-success">
+                                <span class="mdi mdi-arrow-top-right icon-item"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <h6 class="text-muted font-weight-normal">Potential growth</h6>
+                </div>
             </div>
         </div>
-        <div class="col-md-6 text-md-end">
-            <span class="badge bg-info" id="resultCount"></span>
+        <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="d-flex align-items-center align-self-start">
+                                <h3 class="mb-0">$17.34</h3>
+                                <p class="text-success ml-2 mb-0 font-weight-medium">+11%</p>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="icon icon-box-success">
+                                <span class="mdi mdi-arrow-top-right icon-item"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <h6 class="text-muted font-weight-normal">Revenue current</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="d-flex align-items-center align-self-start">
+                                <h3 class="mb-0">$12.34</h3>
+                                <p class="text-danger ml-2 mb-0 font-weight-medium">-2.4%</p>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="icon icon-box-danger">
+                                <span class="mdi mdi-arrow-bottom-left icon-item"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <h6 class="text-muted font-weight-normal">Daily Income</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="d-flex align-items-center align-self-start">
+                                <h3 class="mb-0">$31.53</h3>
+                                <p class="text-success ml-2 mb-0 font-weight-medium">+3.5%</p>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="icon icon-box-success">
+                                <span class="mdi mdi-arrow-top-right icon-item"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <h6 class="text-muted font-weight-normal">Expense current</h6>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -54,8 +125,7 @@
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="reclamationsTableBody">
-                                {# Affichage initial des réclamations (sera remplacé par AJAX) #}
+                            <tbody>
                                 {% if reclamations is defined and reclamations|length > 0 %}
                                     {% for reclamation in reclamations %}
                                         {% set estTraite = reclamation.reponse is not null and reclamation.reponse != '' %}
@@ -107,7 +177,7 @@
         </div>
     </div>
 
-    <!-- Modale unique -->
+    {# MODALE UNIQUE avec labels correctement associés #}
     <div class="modal fade" id="repondreGlobalModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -139,131 +209,30 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        // Recherche dynamique
-        const searchInput = document.getElementById('searchInput');
-        const tbody = document.getElementById('reclamationsTableBody');
-        const resultCountSpan = document.getElementById('resultCount');
-        let debounceTimer;
-
-       function loadReclamations(term = '') {
-    const url = '{{ path('app_reclamation_search_ajax') }}?term=' + encodeURIComponent(term);
-    fetch(url, {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
-    .then(response => {
-        if (!response.ok) {
-            // En cas d'erreur HTTP (500), on lit le texte de la réponse
-            return response.text().then(text => {
-                throw new Error(`HTTP ${response.status}: ${text.substring(0, 200)}`);
-            });
-        }
-        return response.json();
-    })
-    .then(data => {
-        updateTable(data);
-        resultCountSpan.innerText = data.length + ' réclamation(s)';
-    })
-    .catch(error => {
-        console.error('Erreur détaillée:', error.message);
-        alert('Erreur serveur : ' + error.message);
-    });
-}
-        function updateTable(reclamations) {
-            if (reclamations.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center">Aucune réclamation trouvée.</td></tr>';
-                return;
-            }
-
-            let html = '';
-            for (let rec of reclamations) {
-                const estTraite = rec.estTraite;
-                const rowClass = estTraite ? 'table-success' : 'table-danger';
-                const statusBadge = estTraite ? '<span class="badge bg-success">Traité</span>' : '<span class="badge bg-danger">Non traité</span>';
-                
-                let desc = rec.description;
-                if (desc.length > 80) desc = desc.substring(0, 80) + '...';
-                
-                html += `<tr class="${rowClass}">
-                    <td>${rec.id}</td>
-                    <td>${escapeHtml(desc)}</td>
-                    <td>${rec.date}</td>
-                    <td>${escapeHtml(rec.patientNom)} ${escapeHtml(rec.patientPrenom)}</td>
-                    <td>${escapeHtml(rec.patientEmail)}</td>
-                    <td>${statusBadge}</td>
-                    <td>`;
-
-                if (!estTraite) {
-                    html += `<button type="button" class="btn btn-sm btn-primary btn-traiter"
-                                    data-id="${rec.id}"
-                                    data-description="${escapeHtml(rec.description)}"
-                                    data-url="${rec.urlTraiter}">
-                                <i class="mdi mdi-reply"></i> Traiter
-                            </button>`;
-                } else {
-                    html += `<a href="${rec.urlShow}" class="btn btn-sm btn-info">
-                                <i class="mdi mdi-eye"></i> Voir réponse
-                            </a>`;
-                }
-
-                html += `<form method="post" action="${rec.urlDelete}" style="display: inline-block;" onsubmit="return confirm('Supprimer définitivement cette réclamation ?');">
-                            <input type="hidden" name="_token" value="${rec.deleteToken}">
-                            <button class="btn btn-sm btn-danger">
-                                <i class="mdi mdi-delete"></i> Supprimer
-                            </button>
-                        </form>
-                    </td>
-                </tr>`;
-            }
-            tbody.innerHTML = html;
-            attachTraiterEvents();
-        }
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
-
-        function attachTraiterEvents() {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gérer le clic sur chaque bouton "Traiter"
             document.querySelectorAll('.btn-traiter').forEach(button => {
-                button.removeEventListener('click', handleTraiterClick);
-                button.addEventListener('click', handleTraiterClick);
+                button.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    const description = this.dataset.description;
+                    const url = this.dataset.url;
+
+                    // Remplir les champs de la modale
+                    document.getElementById('reclamationIdSpan').innerText = id;
+                    document.getElementById('reclamationDescription').value = description;
+                    document.getElementById('reponseGlobal').value = '';
+                    const form = document.getElementById('globalRepondreForm');
+                    form.dataset.url = url;
+
+                    // Ouvrir la modale Bootstrap 5
+                    const modal = new bootstrap.Modal(document.getElementById('repondreGlobalModal'));
+                    modal.show();
+                });
             });
-        }
 
-        function handleTraiterClick(e) {
-            const button = e.currentTarget;
-            const id = button.dataset.id;
-            const description = button.dataset.description;
-            const url = button.dataset.url;
-
-            document.getElementById('reclamationIdSpan').innerText = id;
-            document.getElementById('reclamationDescription').value = description;
-            document.getElementById('reponseGlobal').value = '';
+            // Soumission du formulaire de réponse en AJAX
             const form = document.getElementById('globalRepondreForm');
-            form.dataset.url = url;
-
-            const modal = new bootstrap.Modal(document.getElementById('repondreGlobalModal'));
-            modal.show();
-        }
-
-        if (searchInput) {
-            searchInput.addEventListener('input', function() {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => {
-                    loadReclamations(this.value);
-                }, 300);
-            });
-        }
-
-        // Soumission du formulaire de réponse
-        const repondreForm = document.getElementById('globalRepondreForm');
-        if (repondreForm) {
-            repondreForm.addEventListener('submit', function(e) {
+            form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const url = this.dataset.url;
                 const reponse = document.getElementById('reponseGlobal').value.trim();
@@ -286,15 +255,13 @@
                     if (data.success) {
                         const modal = bootstrap.Modal.getInstance(document.getElementById('repondreGlobalModal'));
                         modal.hide();
-                        loadReclamations(searchInput ? searchInput.value : '');
+                        location.reload();
                     } else {
                         alert('Erreur : ' + (data.error || 'La réponse est vide'));
                     }
                 })
                 .catch(() => alert('Une erreur est survenue lors de l\'envoi.'));
             });
-        }
-
-        attachTraiterEvents();
+        });
     </script>
 {% endblock %}

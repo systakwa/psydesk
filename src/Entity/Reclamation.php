@@ -33,6 +33,9 @@ class Reclamation
     #[ORM\JoinColumn(name: 'idPatient', referencedColumnName: 'id')]
     private ?Users $idPatient = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $reponse = null;
+
     public function __construct()
     {
         $this->date = new \DateTime();
@@ -73,6 +76,18 @@ class Reclamation
     public function setIdPatient(?Users $idPatient): static
     {
         $this->idPatient = $idPatient;
+        return $this;
+    }
+
+    public function getReponse(): ?string
+    {
+        return $this->reponse;
+    }
+
+    public function setReponse(?string $reponse): static
+    {
+        $this->reponse = $reponse;
+
         return $this;
     }
 }

@@ -374,7 +374,7 @@ public function register(Request $request, UserPasswordHasherInterface $password
     }*/
 
 
-        #[Route('/dashboard/reclamation', name: 'app_reclamation')]
+    #[Route('/dashboard/reclamation', name: 'app_reclamation')]
      //#[Route('/admin/all', name: 'app_reclamation_admin_all', methods: ['GET'])]
     public function indexAll(ReclamationRepository $reclamationRepository): Response
     {
