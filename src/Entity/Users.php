@@ -81,6 +81,9 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $googleId = null;
     
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $image = null;
+    
     #[ORM\Column]
     #[Assert\NotBlank(message: 'Le rôle est obligatoire')]
     #[Assert\Choice(
@@ -105,45 +108,6 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     )]
     private ?string $password = null;
 
-    public function __construct()
-    {
-        $this->role = [self::ROLE_PATIENT];
-        $this->objectifs = new ArrayCollection();
-        $this->reclamations = new ArrayCollection();
-    }
-
-    // Getters et setters existants...
-
-    public function getId(): ?int { return $this->id; }
-    
-    public function getNom(): ?string { return $this->nom; }
-    public function setNom(string $nom): static { $this->nom = $nom; return $this; }
-    
-    public function getPrenom(): ?string { return $this->prenom; }
-    public function setPrenom(string $prenom): static { $this->prenom = $prenom; return $this; }
-    
-    public function getAge(): ?int { return $this->age; }
-    public function setAge(int $age): static { $this->age = $age; return $this; }
-    
-    public function getEmail(): ?string { return $this->email; }
-    public function setEmail(string $email): static { $this->email = $email; return $this; }
-    
-    public function getGoogleId(): ?string { return $this->googleId; }
-    public function setGoogleId(?string $googleId): static { $this->googleId = $googleId; return $this; }
-    
-    public function getUserIdentifier(): string { return (string) $this->email; }
-    
-    public function getRoles(): array { return array_unique($this->role); }
-    public function setRoles(array $role): static { $this->role = $role; return $this; }
-    
-    public function getPassword(): ?string { return $this->password; }
-    public function setPassword(string $password): static { $this->password = $password; return $this; }
-    
-    public function eraseCredentials(): void {}
-    
-    public function getFullName(): string { return $this->prenom . ' ' . $this->nom; }
-
-    // Relations existantes...
     /**
      * @var Collection<int, Objectif>
      */
@@ -155,6 +119,118 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\OneToMany(targetEntity: Reclamation::class, mappedBy: 'idPatient')]
     private Collection $reclamations;
+
+    public function __construct()
+    {
+        $this->role = [self::ROLE_PATIENT];
+        $this->objectifs = new ArrayCollection();
+        $this->reclamations = new ArrayCollection();
+    }
+
+    public function getId(): ?int 
+    { 
+        return $this->id; 
+    }
+    
+    public function getNom(): ?string 
+    { 
+        return $this->nom; 
+    }
+    
+    public function setNom(string $nom): static 
+    { 
+        $this->nom = $nom; 
+        return $this; 
+    }
+    
+    public function getPrenom(): ?string 
+    { 
+        return $this->prenom; 
+    }
+    
+    public function setPrenom(string $prenom): static 
+    { 
+        $this->prenom = $prenom; 
+        return $this; 
+    }
+    
+    public function getAge(): ?int 
+    { 
+        return $this->age; 
+    }
+    
+    public function setAge(int $age): static 
+    { 
+        $this->age = $age; 
+        return $this; 
+    }
+    
+    public function getEmail(): ?string 
+    { 
+        return $this->email; 
+    }
+    
+    public function setEmail(string $email): static 
+    { 
+        $this->email = $email; 
+        return $this; 
+    }
+    
+    public function getGoogleId(): ?string 
+    { 
+        return $this->googleId; 
+    }
+    
+    public function setGoogleId(?string $googleId): static 
+    { 
+        $this->googleId = $googleId; 
+        return $this; 
+    }
+    
+    public function getImage(): ?string 
+    { 
+        return $this->image; 
+    }
+    
+    public function setImage(?string $image): static 
+    { 
+        $this->image = $image; 
+        return $this; 
+    }
+    
+    public function getUserIdentifier(): string 
+    { 
+        return (string) $this->email; 
+    }
+    
+    public function getRoles(): array 
+    { 
+        return array_unique($this->role); 
+    }
+    
+    public function setRoles(array $role): static 
+    { 
+        $this->role = $role; 
+        return $this; 
+    }
+    
+    public function getPassword(): ?string 
+    { 
+        return $this->password; 
+    }
+    
+    public function setPassword(string $password): static 
+    { 
+        $this->password = $password; 
+        return $this; 
+    }
+    
+    public function eraseCredentials(): void {}
+    
+    public function getFullName(): string 
+    { 
+        return $this->prenom . ' ' . $this->nom; 
+    }
 
     public function getObjectifs(): Collection
     {

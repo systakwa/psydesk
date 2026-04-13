@@ -41,7 +41,6 @@
             justify-content: space-between;
             text-align: center;
         }
-        /* Styles pour le logo comme sur la page login */
         .sidebar-logo-container {
             margin: 20px 0;
         }
@@ -105,6 +104,22 @@
         .alert { padding: 12px; border-radius: 10px; margin-bottom: 20px; }
         .alert-success { background: #d1fae5; color: #065f46; border: none; }
         .text-decoration-none { text-decoration: none; }
+        
+        /* Style pour l'upload d'image */
+        .image-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-top: 10px;
+            border: 3px solid #667eea;
+        }
+        .current-image {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        
         @media (max-width: 768px) {
             .register-card { flex-direction: column; }
             .register-left, .register-right { width: 100%; }
@@ -119,10 +134,9 @@
             <div>
                 <h2>Inscription</h2>
                 <p>Rejoignez notre communauté et profitez de tous nos services.</p>
-                <!-- Conteneur du logo stylisé comme sur la page login -->
                 <div class="sidebar-logo-container">
                     <img src="{{ asset('assets/images/logop.png') }}" 
-                         alt="Logo IOVision" 
+                         alt="Logo PSYDESK" 
                          class="sidebar-logo"
                          onerror="this.style.display='none'">
                 </div>
@@ -140,7 +154,17 @@
                 <div class="alert alert-success">{{ message }}</div>
             {% endfor %}
             
-            {{ form_start(registrationForm, {'attr': {'id': 'registerForm', 'novalidate': 'novalidate'}}) }}
+            {{ form_start(registrationForm, {'attr': {'id': 'registerForm', 'novalidate': 'novalidate', 'enctype': 'multipart/form-data'}}) }}
+                
+                <!-- Champ IMAGE -->
+                <div style="margin-bottom: 20px; text-align: center;">
+                    {{ form_label(registrationForm.image, 'Photo de profil', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(registrationForm.image, {'attr': {'class': 'form-control', 'id': 'imageInput', 'accept': 'image/jpeg,image/png,image/jpg,image/gif'}}) }}
+                    <img id="imagePreview" class="image-preview" src="#" style="display: none;">
+                    <div class="current-image" id="currentImageInfo"></div>
+                    {{ form_errors(registrationForm.image) }}
+                </div>
+
                 <div style="display: flex; gap: 15px; margin-bottom: 15px;">
                     <div style="flex: 1;">
                         {{ form_label(registrationForm.nom, 'Nom', {'label_attr': {'class': 'form-label'}}) }}
@@ -174,13 +198,11 @@
                     {{ form_errors(registrationForm.email) }}
                 </div>
 
-                <!-- Liste déroulante avec seulement PATIENT (champ caché ou désactivé) -->
                 <div style="margin-bottom: 15px; display: none;">
                     {{ form_label(registrationForm.role, 'Je suis', {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(registrationForm.role, {'attr': {'class': 'form-select', 'id': 'role'}}) }}
                 </div>
                 
-                <!-- Champ caché pour forcer le rôle PATIENT -->
                 <input type="hidden" name="role" value="ROLE_PATIENT">
 
                 <div style="margin-bottom: 20px;">
@@ -209,6 +231,26 @@
         const ageInput = document.getElementById('age');
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
+        
+        // Preview de l'image
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        
+        if (imageInput) {
+            imageInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    imagePreview.style.display = 'none';
+                }
+            });
+        }
         
         function validateField(input, isValid) {
             if (input.value) {

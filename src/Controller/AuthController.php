@@ -17,6 +17,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Mime\Address;
 use App\Repository\ReclamationRepository;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class AuthController extends AbstractController
 {
@@ -65,6 +66,24 @@ class AuthController extends AbstractController
                     $form->get('plainPassword')->getData()
                 )
             );
+            
+            // Gestion de l'upload de l'image (champ 'image')
+            $imageFile = $request->files->get('image');
+            if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+                
+                try {
+                    $imageFile->move(
+                        $this->getParameter('kernel.project_dir') . '/public/uploads/profiles',
+                        $newFilename
+                    );
+                    $user->setImage('/uploads/profiles/' . $newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('warning', '⚠️ La photo de profil n\'a pas pu être téléchargée, mais votre compte a bien été créé.');
+                }
+            }
             
             $entityManager->persist($user);
             $entityManager->flush();
