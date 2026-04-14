@@ -97,7 +97,7 @@
     <div class="top-bar">
         <div class="page-title">
             <h1>Tableau de bord</h1>
-            <p>Bienvenue, Dr {{ user.prenom }} 👋</p>
+            <p>Bienvenue, Dr {{ user.prenom }} </p>
         </div>
         <div class="user-info">
             <span>Psychologue</span>
@@ -115,14 +115,14 @@
             <div class="stat-label">Rendez-vous</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value">⭐ 5.0</div>
+            <div class="stat-value"> 5.0</div>
             <div class="stat-label">Évaluation</div>
         </div>
     </div>
 
     <div class="two-columns">
         <div class="card-premium">
-            <div class="card-header"><h3>👤 Mon profil professionnel</h3></div>
+            <div class="card-header"><h3> Mon profil professionnel</h3></div>
             <div style="padding: 25px; text-align: center;">
                 <div class="profile-avatar">{{ user.prenom|first|upper }}{{ user.nom|first|upper }}</div>
                 <h4>Dr {{ user.nom }}</h4>
@@ -134,7 +134,7 @@
             </div>
         </div>
         <div class="card-premium">
-            <div class="card-header"><h3>📅 Rendez-vous à venir</h3></div>
+            <div class="card-header"><h3> Rendez-vous à venir</h3></div>
             <div class="list-group">
                 <div class="list-item text-center" style="justify-content: center;">
                     <span class="text-muted">Aucun rendez-vous programmé</span>

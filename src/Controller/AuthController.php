@@ -29,10 +29,18 @@ class AuthController extends AbstractController
     }
 
     #[Route('/login', name: 'app_login')]
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    public function login(AuthenticationUtils $authenticationUtils, Request $request, EntityManagerInterface $em): Response
     {
-        // PLUS DE REDIRECTION AUTOMATIQUE VERS DASHBOARD
-        // La page de login est toujours accessible, même si l'utilisateur est connecté
+        // ✅ VÉRIFICATION SI L'UTILISATEUR EST BANNI
+        $email = $request->request->get('_username');
+        if ($email) {
+            $user = $em->getRepository(Users::class)->findOneBy(['email' => $email]);
+            if ($user && !$user->isEnabled()) {
+                $banReason = $user->getBanReason();
+                $this->addFlash('error', '❌ Votre compte a été désactivé.' . ($banReason ? ' Motif: ' . $banReason : ' Veuillez contacter l\'administrateur.'));
+                return $this->redirectToRoute('app_login');
+            }
+        }
         
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
@@ -41,6 +49,13 @@ class AuthController extends AbstractController
             'last_username' => $lastUsername,
             'error' => $error,
         ]);
+    }
+
+    // ✅ ROUTE POUR LA CONNEXION PAR VISAGE (RECONNAISSANCE FACIALE)
+    #[Route('/login-face', name: 'app_login_face')]
+    public function loginFace(): Response
+    {
+        return $this->render('auth/login_face.html.twig');
     }
 
     #[Route('/logout', name: 'app_logout')]
@@ -85,6 +100,13 @@ class AuthController extends AbstractController
                 }
             }
             
+            // ✅ SAUVEGARDE DU FACE_TOKEN POUR LA RECONNAISSANCE FACIALE
+            $faceToken = $request->getSession()->get('face_token');
+            if ($faceToken) {
+                $user->setFaceToken($faceToken);
+                $request->getSession()->remove('face_token');
+            }
+            
             $entityManager->persist($user);
             $entityManager->flush();
 
@@ -126,6 +148,12 @@ class AuthController extends AbstractController
             
             if (!$user) {
                 $this->addFlash('error', '❌ Aucun compte trouvé avec cet email.');
+                return $this->redirectToRoute('app_reset_password');
+            }
+            
+            // ✅ Vérifier si l'utilisateur n'est pas banni
+            if (!$user->isEnabled()) {
+                $this->addFlash('error', '❌ Votre compte est désactivé. Vous ne pouvez pas réinitialiser votre mot de passe.');
                 return $this->redirectToRoute('app_reset_password');
             }
             
@@ -190,6 +218,12 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
         
+        // ✅ VÉRIFICATION SI L'UTILISATEUR EST BANNI
+        if (!$user->isEnabled()) {
+            $this->addFlash('error', '❌ Votre compte a été désactivé. Veuillez contacter l\'administrateur.');
+            return $this->redirectToRoute('app_logout');
+        }
+        
         $roles = $user->getRoles();
         
         if (in_array('ROLE_ADMIN', $roles)) {
@@ -210,6 +244,12 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
         
+        // ✅ VÉRIFICATION SI L'UTILISATEUR EST BANNI
+        if (!$user->isEnabled()) {
+            $this->addFlash('error', '❌ Votre compte a été désactivé.');
+            return $this->redirectToRoute('app_logout');
+        }
+        
         return $this->render('dashboard_p/index.html.twig', [
             'user' => $user,
         ]);
@@ -222,6 +262,12 @@ class AuthController extends AbstractController
         
         if (!$user) {
             return $this->redirectToRoute('app_login');
+        }
+        
+        // ✅ VÉRIFICATION SI L'UTILISATEUR EST BANNI
+        if (!$user->isEnabled()) {
+            $this->addFlash('error', '❌ Votre compte a été désactivé.');
+            return $this->redirectToRoute('app_logout');
         }
         
         return $this->render('dashboard_psy/index.html.twig', [
@@ -238,6 +284,12 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
         
+        // ✅ VÉRIFICATION SI L'UTILISATEUR EST BANNI
+        if (!$user->isEnabled()) {
+            $this->addFlash('error', '❌ Votre compte a été désactivé.');
+            return $this->redirectToRoute('app_logout');
+        }
+        
         return $this->render('dashboard/psychologue_statistiques.html.twig', [
             'user' => $user,
         ]);
@@ -250,6 +302,12 @@ class AuthController extends AbstractController
         
         if (!$user) {
             return $this->redirectToRoute('app_login');
+        }
+        
+        // ✅ MÊME LES ADMINS SONT VÉRIFIÉS
+        if (!$user->isEnabled()) {
+            $this->addFlash('error', '❌ Votre compte a été désactivé.');
+            return $this->redirectToRoute('app_logout');
         }
         
         $users = $entityManager->getRepository(Users::class)->findAll();
@@ -267,6 +325,12 @@ class AuthController extends AbstractController
         
         if (!$user) {
             return $this->redirectToRoute('app_login');
+        }
+        
+        // ✅ VÉRIFICATION SI L'UTILISATEUR EST BANNI
+        if (!$user->isEnabled()) {
+            $this->addFlash('error', '❌ Votre compte a été désactivé.');
+            return $this->redirectToRoute('app_logout');
         }
         
         if ($request->isMethod('POST')) {

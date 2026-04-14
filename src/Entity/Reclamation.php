@@ -5,7 +5,7 @@ namespace App\Entity;
 use App\Repository\ReclamationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert; // ← indispensable
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ReclamationRepository::class)]
 class Reclamation
@@ -32,6 +32,13 @@ class Reclamation
     #[ORM\ManyToOne(targetEntity: Users::class, inversedBy: 'reclamations')]
     #[ORM\JoinColumn(name: 'idPatient', referencedColumnName: 'id')]
     private ?Users $idPatient = null;
+
+    // ✅ AJOUT DES CHAMPS POUR LE BANNISSEMENT
+    #[ORM\Column(type: 'string', length: 50, options: ['default' => 'pending'])]
+    private string $status = 'pending';
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $processedAt = null;
 
     public function __construct()
     {
@@ -73,6 +80,29 @@ class Reclamation
     public function setIdPatient(?Users $idPatient): static
     {
         $this->idPatient = $idPatient;
+        return $this;
+    }
+
+    // ✅ GETTERS ET SETTERS POUR LE BANNISSEMENT
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
+        return $this;
+    }
+
+    public function getProcessedAt(): ?\DateTimeInterface
+    {
+        return $this->processedAt;
+    }
+
+    public function setProcessedAt(?\DateTimeInterface $processedAt): static
+    {
+        $this->processedAt = $processedAt;
         return $this;
     }
 }

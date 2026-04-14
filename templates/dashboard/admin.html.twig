@@ -92,6 +92,20 @@
             color: #6c757d;
             margin-top: 5px;
         }
+        
+        /* Style pour le bouton Assistant IA */
+        .assistant-btn {
+            background: linear-gradient(135deg, #38b2ac 0%, #319795 100%);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .assistant-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(56,178,172,0.4);
+        }
     </style>
 {% endblock %}
 
@@ -195,6 +209,31 @@
                         </div>
                     </div>
                     <h6 class="text-muted font-weight-normal">Administrateurs</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bouton Assistant IA -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-gradient-primary text-white">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h4 class="mb-2">
+                                <i class="ri-robot-line"></i> Assistant IA - Gestion des Utilisateurs
+                            </h4>
+                            <p class="mb-0 opacity-75">
+                                Posez vos questions sur les utilisateurs : liste, statistiques, recherche par rôle...
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <a href="{{ path('app_admin_assistant') }}" class="btn assistant-btn text-white">
+                                <i class="ri-robot-line"></i> Lancer l'assistant
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -393,7 +432,7 @@
             searchInput.focus();
             
             // Animation au chargement
-            console.log('Recherche dynamique activée ✅');
+            console.log('Recherche dynamique activée ');
         });
     </script>
 {% endblock %}

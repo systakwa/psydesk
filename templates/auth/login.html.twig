@@ -141,6 +141,15 @@
             opacity: 0.9;
         }
 
+        .btn-face {
+            background: linear-gradient(135deg, #38b2ac, #319795);
+            margin-top: 5px;
+        }
+
+        .btn-face:hover {
+            background: linear-gradient(135deg, #319795, #2c7a7b);
+        }
+
         a {
             color: #667eea;
             text-decoration: none;
@@ -300,7 +309,6 @@
         <form method="post" action="{{ path('app_login') }}" novalidate>
             <h1>Connexion</h1>
             <div class="social-icons">
-                <!-- LIEN GOOGLE CORRIGÉ - C'est la correction importante ! -->
                 <a href="{{ path('connect_google_start') }}" class="icon">
                     <i class="fa-brands fa-google-plus-g"></i>
                 </a>
@@ -309,7 +317,6 @@
                 <a href="#" class="icon"><i class="fa-brands fa-linkedin-in"></i></a>
             </div>
       
-
             {% if error %}
                 <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
             {% endif %}
@@ -317,7 +324,14 @@
             <input type="email" name="_username" placeholder="Email" value="{{ last_username }}" required>
             <input type="password" name="_password" placeholder="Mot de passe" required>
             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+            
             <button type="submit">Se connecter</button>
+            
+            <!--  BOUTON CONNEXION PAR VISAGE AJOUTÉ -->
+            <a href="{{ path('app_login_face') }}" class="btn-face" style="text-decoration: none; text-align: center; display: block;">
+                <i class="fa-solid fa-camera"></i> Se connecter avec mon visage
+            </a>
+            
             <a href="{{ path('app_reset_password') }}">Mot de passe oublié ?</a>
             
             <div class="register-link">

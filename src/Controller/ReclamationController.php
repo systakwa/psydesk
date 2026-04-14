@@ -33,6 +33,7 @@ final class ReclamationController extends AbstractController
     #[Route('/admin/all', name: 'app_reclamation_admin_all', methods: ['GET'])]
     public function indexAll(ReclamationRepository $reclamationRepository): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $reclamations = $reclamationRepository->findAll();
         return $this->render('Objectif_reclamtion_back/reclamation.html.twig', [
             'reclamations' => $reclamations,
@@ -137,5 +138,52 @@ final class ReclamationController extends AbstractController
         }
 
         return $this->redirectToRoute('app_reclamation_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    // ✅ NOUVELLES METHODES POUR LE BANNISSEMENT
+    #[Route('/admin/ban/{id}', name: 'app_reclamation_ban', methods: ['POST'])]
+    public function banUser(Request $request, Reclamation $reclamation, EntityManagerInterface $em): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        if (!$this->isCsrfTokenValid('ban'.$reclamation->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token invalide.');
+            return $this->redirectToRoute('app_reclamation_admin_all');
+        }
+        
+        $user = $reclamation->getIdPatient();
+        $reason = $request->request->get('reason', 'Réclamation grave: ' . substr($reclamation->getDescription(), 0, 100));
+        
+        // Bannir l'utilisateur
+        $user->setIsEnabled(false);
+        $user->setBannedAt(new \DateTime());
+        $user->setBanReason($reason);
+        
+        // Marquer la réclamation
+        $reclamation->setStatus('grave');
+        $reclamation->setProcessedAt(new \DateTime());
+        
+        $em->flush();
+        
+        $this->addFlash('success', "🔒 L'utilisateur {$user->getFullName()} a été désactivé.");
+        return $this->redirectToRoute('app_reclamation_admin_all');
+    }
+
+    #[Route('/admin/ignore/{id}', name: 'app_reclamation_ignore', methods: ['POST'])]
+    public function ignoreReclamation(Request $request, Reclamation $reclamation, EntityManagerInterface $em): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        if (!$this->isCsrfTokenValid('ignore'.$reclamation->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token invalide.');
+            return $this->redirectToRoute('app_reclamation_admin_all');
+        }
+        
+        $reclamation->setStatus('resolved');
+        $reclamation->setProcessedAt(new \DateTime());
+        $em->flush();
+        
+        $this->addFlash('success', "✅ Réclamation marquée comme résolue.");
+        return $this->redirectToRoute('app_reclamation_admin_all');
     }
 }

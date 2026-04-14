@@ -84,6 +84,20 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $image = null;
     
+    // ✅ AJOUT DU CHAMP faceToken POUR LA RECONNAISSANCE FACIALE
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $faceToken = null;
+    
+    // ✅ AJOUT DES CHAMPS DE BANNISSEMENT
+    #[ORM\Column(type: 'boolean', options: ['default' => true])]
+    private bool $isEnabled = true;
+    
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $bannedAt = null;
+    
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $banReason = null;
+    
     #[ORM\Column]
     #[Assert\NotBlank(message: 'Le rôle est obligatoire')]
     #[Assert\Choice(
@@ -125,6 +139,7 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
         $this->role = [self::ROLE_PATIENT];
         $this->objectifs = new ArrayCollection();
         $this->reclamations = new ArrayCollection();
+        $this->isEnabled = true; // Par défaut, l'utilisateur est actif
     }
 
     public function getId(): ?int 
@@ -196,6 +211,57 @@ class Users implements UserInterface, PasswordAuthenticatedUserInterface
     { 
         $this->image = $image; 
         return $this; 
+    }
+    
+    // ✅ GETTER ET SETTER POUR faceToken
+    public function getFaceToken(): ?string
+    {
+        return $this->faceToken;
+    }
+    
+    public function setFaceToken(?string $faceToken): static
+    {
+        $this->faceToken = $faceToken;
+        return $this;
+    }
+    
+    // ✅ GETTERS ET SETTERS POUR LE BANNISSEMENT
+    public function isEnabled(): bool
+    {
+        return $this->isEnabled;
+    }
+    
+    public function setIsEnabled(bool $isEnabled): static
+    {
+        $this->isEnabled = $isEnabled;
+        return $this;
+    }
+    
+    public function getBannedAt(): ?\DateTimeInterface
+    {
+        return $this->bannedAt;
+    }
+    
+    public function setBannedAt(?\DateTimeInterface $bannedAt): static
+    {
+        $this->bannedAt = $bannedAt;
+        return $this;
+    }
+    
+    public function getBanReason(): ?string
+    {
+        return $this->banReason;
+    }
+    
+    public function setBanReason(?string $banReason): static
+    {
+        $this->banReason = $banReason;
+        return $this;
+    }
+    
+    public function isBanned(): bool
+    {
+        return !$this->isEnabled;
     }
     
     public function getUserIdentifier(): string 

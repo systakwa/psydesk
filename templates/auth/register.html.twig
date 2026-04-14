@@ -97,6 +97,13 @@
             transition: all 0.3s ease;
         }
         .btn-register:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102,126,234,0.4); }
+        .btn-face-capture {
+            background: linear-gradient(135deg, #38b2ac, #319795);
+            margin-top: 10px;
+        }
+        .btn-face-capture:hover {
+            background: linear-gradient(135deg, #319795, #2c7a7b);
+        }
         .text-center { text-align: center; }
         .mt-3 { margin-top: 15px; }
         .mt-4 { margin-top: 20px; }
@@ -119,6 +126,48 @@
             font-size: 12px;
             color: #666;
         }
+        
+        /* Style pour la capture faciale */
+        .face-capture-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .face-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 10px auto;
+            border: 3px solid #667eea;
+            display: none;
+        }
+        .face-placeholder {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px auto;
+            cursor: pointer;
+        }
+        .face-placeholder i {
+            font-size: 40px;
+            color: #94a3b8;
+        }
+        .face-status {
+            font-size: 12px;
+            margin-top: 8px;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .face-status.success { background: #d1fae5; color: #065f46; }
+        .face-status.error { background: #fee2e2; color: #991b1b; }
+        .face-status.info { background: #e0e7ff; color: #3730a3; }
         
         @media (max-width: 768px) {
             .register-card { flex-direction: column; }
@@ -198,6 +247,29 @@
                     {{ form_errors(registrationForm.email) }}
                 </div>
 
+                <!-- SECTION RECONNAISSANCE FACIALE -->
+                <div class="face-capture-container">
+                    <label class="form-label"> Reconnaissance faciale</label>
+                    
+                    <!-- Caméra cachée -->
+                    <video id="faceVideo" autoplay muted playsinline style="display: none;"></video>
+                    <canvas id="faceCanvas" style="display: none;"></canvas>
+                    
+                    <!-- Zone d'aperçu -->
+                    <div id="facePlaceholder" class="face-placeholder" onclick="startFaceCapture()">
+                        <i class="ri-camera-line"></i>
+                    </div>
+                    <img id="facePreview" class="face-preview" src="#" alt="Visage capturé">
+                    
+                    <div id="faceStatus" class="face-status info"> Cliquez pour capturer votre visage</div>
+                    
+                    <button type="button" id="captureFaceBtn" class="btn-register btn-face-capture">
+                        <i class="ri-camera-line"></i> Capturer mon visage
+                    </button>
+                    
+                    <input type="hidden" id="face_token" name="face_token">
+                </div>
+
                 <div style="margin-bottom: 15px; display: none;">
                     {{ form_label(registrationForm.role, 'Je suis', {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(registrationForm.role, {'attr': {'class': 'form-select', 'id': 'role'}}) }}
@@ -250,6 +322,95 @@
                     imagePreview.style.display = 'none';
                 }
             });
+        }
+        
+        // ========== RECONNAISSANCE FACIALE ==========
+        const video = document.getElementById('faceVideo');
+        const canvas = document.getElementById('faceCanvas');
+        const facePreview = document.getElementById('facePreview');
+        const facePlaceholder = document.getElementById('facePlaceholder');
+        const faceStatus = document.getElementById('faceStatus');
+        const faceTokenInput = document.getElementById('face_token');
+        let stream = null;
+        let isCapturing = false;
+        
+        async function startFaceCapture() {
+            if (isCapturing) return;
+            isCapturing = true;
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                faceStatus.textContent = ' Caméra active. Positionnez votre visage puis cliquez sur "Capturer"';
+                faceStatus.className = 'face-status info';
+                
+                // Attendre 2 secondes puis capturer
+                setTimeout(() => {
+                    captureFace();
+                }, 2000);
+            } catch (error) {
+                faceStatus.textContent = ' Impossible d\'accéder à la caméra: ' + error.message;
+                faceStatus.className = 'face-status error';
+                isCapturing = false;
+            }
+        }
+        
+        async function captureFace() {
+            if (!stream) {
+                faceStatus.textContent = ' Caméra non disponible';
+                faceStatus.className = 'face-status error';
+                isCapturing = false;
+                return;
+            }
+            
+            faceStatus.textContent = ' Analyse du visage en cours...';
+            faceStatus.className = 'face-status info';
+            
+            // Capturer l'image
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Afficher l'aperçu
+            facePreview.src = canvas.toDataURL('image/jpeg');
+            facePreview.style.display = 'block';
+            facePlaceholder.style.display = 'none';
+            
+            // Envoyer au serveur
+            canvas.toBlob(async (blob) => {
+                const formData = new FormData();
+                formData.append('image', blob, 'face.jpg');
+                
+                try {
+                    const response = await fetch('/face/register', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        faceTokenInput.value = result.face_token;
+                        faceStatus.textContent = ' Visage enregistré avec succès !';
+                        faceStatus.className = 'face-status success';
+                    } else {
+                        faceStatus.textContent = ' ' + result.message;
+                        faceStatus.className = 'face-status error';
+                    }
+                } catch (error) {
+                    faceStatus.textContent = ' Erreur de communication avec le serveur';
+                    faceStatus.className = 'face-status error';
+                }
+                
+                // Arrêter la caméra
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    stream = null;
+                    video.style.display = 'none';
+                }
+                isCapturing = false;
+            }, 'image/jpeg');
         }
         
         function validateField(input, isValid) {
@@ -305,6 +466,9 @@
                 alert('Veuillez corriger les erreurs dans le formulaire.');
             }
         });
+        
+        // Bouton de capture faciale
+        document.getElementById('captureFaceBtn').addEventListener('click', startFaceCapture);
     </script>
 </body>
 </html>

@@ -60,7 +60,7 @@
 
 {% block body %}
 <div class="sidebar">
-    <div class="logo"><h2>❤️ PSYDESK</h2></div>
+    <div class="logo"><h2> PSYDESK</h2></div>
     <div class="nav-menu">
         <div class="nav-item active"><a href="{{ path('app_patient_dashboard') }}"><i class="ri-dashboard-line"></i> Tableau de bord</a></div>
         <div class="nav-item"><a href="#"><i class="ri-calendar-line"></i> Mes rendez-vous</a></div>
@@ -72,13 +72,13 @@
 
 <div class="main-content">
     <div class="top-bar">
-        <div class="page-title"><h1>Mon espace santé</h1><p>Bienvenue, {{ user.prenom }} 👋</p></div>
+        <div class="page-title"><h1>Mon espace santé</h1><p>Bienvenue, {{ user.prenom }} </p></div>
         <div class="user-info"><span>Patient</span><div class="user-avatar">{{ user.prenom|first|upper }}{{ user.nom|first|upper }}</div></div>
     </div>
 
     <div class="welcome-card">
         <div class="row align-items-center">
-            <div class="col-md-8"><h2 class="fw-bold mb-2">👋 Bonjour, {{ user.prenom }} !</h2><p class="mb-0">Bienvenue dans votre espace santé. Prenez soin de vous.</p></div>
+            <div class="col-md-8"><h2 class="fw-bold mb-2"> Bonjour, {{ user.prenom }} !</h2><p class="mb-0">Bienvenue dans votre espace santé. Prenez soin de vous.</p></div>
             <div class="col-md-4 text-end"><i class="ri-heart-pulse-line fs-1 opacity-50"></i></div>
         </div>
     </div>
@@ -91,7 +91,7 @@
 
     <div class="two-columns">
         <div class="card-premium">
-            <div class="card-header"><h3>👤 Mon profil</h3></div>
+            <div class="card-header"><h3> Mon profil</h3></div>
             <div style="padding: 25px; text-align: center;">
                 <div class="profile-avatar">{{ user.prenom|first|upper }}{{ user.nom|first|upper }}</div>
                 <h4>{{ user.fullName }}</h4>
@@ -103,7 +103,7 @@
             </div>
         </div>
         <div class="card-premium">
-            <div class="card-header"><h3>📅 Prochains rendez-vous</h3></div>
+            <div class="card-header"><h3> Prochains rendez-vous</h3></div>
             <div class="list-group">
                 <div class="list-item text-center" style="justify-content: center;"><span class="text-muted">Aucun rendez-vous programmé</span></div>
             </div>
