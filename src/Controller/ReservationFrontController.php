@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\HttpClient\HttpClient;
 
 #[Route('/reservation/front')]
 final class ReservationFrontController extends AbstractController
@@ -564,5 +565,139 @@ final class ReservationFrontController extends AbstractController
 
         $this->addFlash('success', 'Rendez-vous annulé avec succès.');
         return $this->redirectToRoute('app_reservation_front_my_reservations');
+    }
+
+    /**
+     * Get chatbot widget data and initialize conversation
+     */
+    #[Route('/diagnostic', name: 'app_reservation_front_diagnostic', methods: ['POST'])]
+    public function diagnostic(Request $request): JsonResponse
+    {
+        $patient = $this->getUser();
+        if (!$patient) {
+            return new JsonResponse(['success' => false, 'error' => 'Not authenticated'], 401);
+        }
+
+        // Initialize session conversation
+        if (!$request->getSession()->has('chatbot_conversation')) {
+            $request->getSession()->set('chatbot_conversation', []);
+        }
+
+        $conversation = $request->getSession()->get('chatbot_conversation');
+
+        return new JsonResponse([
+            'success' => true,
+            'conversation' => $conversation,
+        ]);
+    }
+
+    /**
+     * Send message to diagnostic chatbot and receive AI response
+     */
+    #[Route('/diagnostic/send', name: 'app_reservation_front_diagnostic_send', methods: ['POST'])]
+    public function sendDiagnosticMessage(Request $request): JsonResponse
+    {
+        $patient = $this->getUser();
+        if (!$patient) {
+            return new JsonResponse(['success' => false, 'error' => 'Not authenticated'], 401);
+        }
+
+        $userMessage = $request->request->get('message', '');
+        if (!$userMessage || strlen($userMessage) > 500) {
+            return new JsonResponse(['success' => false, 'error' => 'Invalid message'], 400);
+        }
+
+        // Get/initialize conversation from session
+        $session = $request->getSession();
+        $conversation = $session->get('chatbot_conversation', []);
+
+        // Add user message
+        $conversation[] = ['role' => 'user', 'content' => $userMessage];
+
+        // Call Groq API
+        $client = HttpClient::create();
+
+      
+        $apiKey = $_ENV['GROQ_API_KEY'];
+
+        $systemPrompt = <<<'PROMPT'
+You are a mental health self-assessment AI assistant. Your role is to:
+1. Listen to users describe their mental health symptoms
+2. Ask clarifying questions about their emotional state, sleep, appetite, anxiety levels, mood
+3. Provide preliminary insights about potential conditions (depression, anxiety, bipolar disorder, etc.)
+4. ALWAYS remind users this is not professional diagnosis - they should see a licensed psychologist
+
+You should ONLY answer questions about:
+- Mental health symptoms
+- Emotional state and feelings
+- Stress, anxiety, depression indicators
+- Sleep, appetite, concentration changes
+- Self-care and coping strategies
+
+You MUST REFUSE to:
+- Answer medical advice for physical conditions
+- Provide medication recommendations
+- Answer non-mental-health questions
+- Make definitive diagnoses
+
+Always be empathetic and encouraging. Suggest scheduling consultation with real psychologists.
+PROMPT;
+
+        try {
+            $response = $client->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'model' => 'llama-3.1-8b-instant',
+                    'messages' => array_merge(
+                        [['role' => 'system', 'content' => $systemPrompt]],
+                        $conversation
+                    ),
+                    'temperature' => 0.7,
+                    'max_tokens' => 500,
+                ],
+            ]);
+
+            $data = $response->toArray();
+            $aiMessage = $data['choices'][0]['message']['content'] ?? 'I encountered an error processing your request.';
+
+            // Add AI response to conversation
+            $conversation[] = ['role' => 'assistant', 'content' => $aiMessage];
+            $session->set('chatbot_conversation', $conversation);
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => $aiMessage,
+            ]);
+
+        } catch (\Exception $e) {
+            // Get more detailed error info
+            $errorMsg = $e->getMessage();
+            if (method_exists($e, 'getResponse') && $e->getResponse()) {
+                $errorMsg = $e->getResponse()->getContent(false);
+            }
+
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'API error: ' . $errorMsg,
+            ], 500);
+        }
+    }
+
+    /**
+     * Clear chatbot conversation
+     */
+    #[Route('/diagnostic/clear', name: 'app_reservation_front_diagnostic_clear', methods: ['POST'])]
+    public function clearDiagnosticConversation(Request $request): JsonResponse
+    {
+        $patient = $this->getUser();
+        if (!$patient) {
+            return new JsonResponse(['success' => false, 'error' => 'Not authenticated'], 401);
+        }
+
+        $request->getSession()->remove('chatbot_conversation');
+        return new JsonResponse(['success' => true]);
     }
 }

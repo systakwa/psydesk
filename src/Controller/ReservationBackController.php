@@ -184,9 +184,63 @@ final class ReservationBackController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_reservation_back_show', methods: ['GET'])]
-    public function show(Reservation $reservation, EntityManagerInterface $em): Response
+    /**
+     * Calendar view for psychologist to see all reservations by month and day
+     */
+    #[Route('/calendar', name: 'app_reservation_back_calendar', methods: ['GET'])]
+    public function calendar(EntityManagerInterface $em): Response
     {
+        $user = $this->getUser();
+
+        // Get reservations for current psychologist
+        if ($this->isGranted('ROLE_PSYCHOLOGUE') && !$this->isGranted('ROLE_ADMIN')) {
+            $psychologue = $user;
+            $reservations = $em->getRepository(Reservation::class)->createQueryBuilder('r')
+                ->where('r.psychologue = :psychologue')
+                ->andWhere('r.datePrevue IS NOT NULL')
+                ->setParameter('psychologue', $user)
+                ->orderBy('r.datePrevue', 'ASC')
+                ->getQuery()
+                ->getResult();
+        } else {
+            // Admin sees all reservations with valid dates
+            $psychologue = null;
+            $reservations = $em->getRepository(Reservation::class)->createQueryBuilder('r')
+                ->where('r.datePrevue IS NOT NULL')
+                ->orderBy('r.datePrevue', 'ASC')
+                ->getQuery()
+                ->getResult();
+        }
+
+        // Get planning for psychologist (for time slots)
+        $planning = [];
+        if ($psychologue) {
+            $plannings = $em->getRepository(\App\Entity\Planning::class)->findBy(['psychologue' => $psychologue]);
+            foreach ($plannings as $p) {
+                $planning[] = [
+                    'jour' => strtolower($p->getJour()),
+                    'heureDebut' => $p->getHeureDebut()->format('H:i'),
+                    'heureFin' => $p->getHeureFin()->format('H:i'),
+                ];
+            }
+        }
+
+        return $this->render('reservation_back/calendar.html.twig', [
+            'reservations' => $reservations,
+            'planning' => $planning,
+        ]);
+    }
+
+    #[Route('/{id}', name: 'app_reservation_back_show', methods: ['GET'])]
+    public function show(int $id, EntityManagerInterface $em): Response
+    {
+        $reservation = $em->getRepository(Reservation::class)->find($id);
+
+        if (!$reservation) {
+            $this->addFlash('error', 'Reservation not found.');
+            return $this->redirectToRoute('app_reservation_back_index');
+        }
+
         return $this->render('reservation_back/show.html.twig', [
             'reservation' => $reservation,
             'patient' => $reservation->getPatient(),

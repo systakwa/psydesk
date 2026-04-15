@@ -6,6 +6,9 @@
 {% block page_subtitle %}Consultez et gérez toutes les réservations des patients.{% endblock %}
 
 {% block page_header_action %}
+    <a href="{{ path('app_reservation_back_calendar') }}" class="btn btn-sm btn-outline-info me-2">
+        <i class="bi bi-calendar3 me-1"></i> Calendar View
+    </a>
     <a href="{{ path('app_reservation_back_new') }}" class="btn btn-sm btn-primary">
         + Nouvelle
     </a>
