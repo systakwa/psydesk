@@ -57,6 +57,7 @@
                                                 <div class="mt-3">
                                                     <a href="{{ path('app_objectif_show', {'id': objectif.id}) }}" class="btn btn-sm btn-outline-primary me-2">Voir</a>
 
+                                                    <a href="#" class="btn btn-sm btn-outline-warning me-2 view-analysis-btn" data-objectif-id="{{ objectif.id }}" data-evaluate-url="{{ path('api_objectif_evaluate', {'id': objectif.id}) }}">Voir analyse</a>
                                                     <a href="{{ path('app_note_psy', {'objectif_id': objectif.id}) }}" class="btn btn-sm btn-outline-info">Voir note</a>
                                                 </div>
                                             </div>
@@ -115,6 +116,76 @@
         <!-- Bootstrap core JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
         <!-- Core theme JS -->
-        <script src="/js/scripts.js"></script>
+        <script src="{{ asset('assets/js/scripts.js') }}"></script>
+        <!-- Analyse modal -->
+        <div class="modal fade" id="analyseModal" tabindex="-1" aria-labelledby="analyseModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="analyseModalLabel">Analyse de l'objectif</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="analyse-modal-body">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const analyseButtons = document.querySelectorAll('.view-analysis-btn');
+                analyseButtons.forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const objectifId = this.dataset.objectifId;
+                        const url = this.dataset.evaluateUrl || null;
+                        const modalBody = document.getElementById('analyse-modal-body');
+                        const modalEl = document.getElementById('analyseModal');
+                        const modal = new bootstrap.Modal(modalEl);
+
+                        modalBody.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Chargement...</span></div></div>';
+
+                        const fetchUrl = url ? (url + '?json=1') : (`/api/objectifs/${objectifId}/evaluate?json=1`);
+                        console.log('Fetching analysis from', fetchUrl);
+
+                        fetch(fetchUrl)
+                            .then(resp => {
+                                console.log('Fetch response', resp.status);
+                                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                                return resp.json();
+                            })
+                            .then(data => {
+                                if (data.error) {
+                                    modalBody.innerHTML = `<div class="alert alert-danger">Erreur: ${data.error}</div>`;
+                                    return;
+                                }
+                                let html = `<h5>${data.summary ?? 'Analyse'}</h5>`;
+                                html += `<p><strong>Moyenne:</strong> ${data.average ?? 'N/A'} (${data.count ?? 0} notes)</p>`;
+                                html += `<p><strong>Interprétation:</strong> ${data.description ?? ''}</p>`;
+                                html += `<p><strong>Statut:</strong> ${data.status ? 'Probablement réussi' : 'Probablement non atteint'}</p>`;
+                                if (data.recommendations && Array.isArray(data.recommendations)) {
+                                    html += '<h6>Recommandations</h6><ul>' + data.recommendations.map(r => `<li>${r}</li>`).join('') + '</ul>';
+                                }
+                                if (data.ai) {
+                                    html += '<h6>Analyse IA</h6>';
+                                    html += `<pre style="white-space:pre-wrap;">${JSON.stringify(data.ai, null, 2)}</pre>`;
+                                }
+                                modalBody.innerHTML = html;
+                            })
+                            .catch(err => {
+                                console.error('Fetch error', err);
+                                modalBody.innerHTML = `<div class="alert alert-danger">Erreur réseau: ${err.message}</div>`;
+                            });
+
+                        modal.show();
+                    });
+                });
+            });
+        </script>
     </body>
 </html>

@@ -4,6 +4,7 @@ namespace App\Controller\Api;
 
 use App\Entity\Objectif;
 use App\Repository\NotejourRepository;
+use App\Service\ObjectiveEvaluationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -49,5 +50,35 @@ final class ObjectifApiController extends AbstractController
         }
 
         return new JsonResponse($data);
+    }
+
+    #[Route('/{id}/evaluate', name: 'api_objectif_evaluate', methods: ['GET'])]
+    public function evaluate(int $id, Request $request, EntityManagerInterface $entityManager, ObjectiveEvaluationService $evaluationService): Response
+    {
+        $objectif = $entityManager->getRepository(Objectif::class)->find($id);
+        if (!$objectif) {
+            if (str_contains($request->headers->get('Accept', ''), 'text/html')) {
+                return new Response('Objectif not found', 404);
+            }
+            return new JsonResponse(['error' => 'Objectif not found'], 404);
+        }
+
+        $result = $evaluationService->evaluate($objectif);
+
+        // If query param json=1 is provided, always return JSON.
+        $wantJson = $request->query->get('json');
+        if ($wantJson === '1' || $wantJson === 'true') {
+            return new JsonResponse($result);
+        }
+
+        $accept = $request->headers->get('Accept', '');
+        if (str_contains($accept, 'text/html')) {
+            return $this->render('api/objectif_evaluate.html.twig', [
+                'objectif' => $objectif,
+                'result' => $result,
+            ]);
+        }
+
+        return new JsonResponse($result);
     }
 }

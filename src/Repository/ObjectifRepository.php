@@ -16,6 +16,27 @@ class ObjectifRepository extends ServiceEntityRepository
         parent::__construct($registry, Objectif::class);
     }
 
+    /**
+     * Retourne la moyenne de satisfaction et le nombre de notes pour un objectif.
+     * @return array{average:?float, count:int}
+     */
+    public function getAverageSatisfaction(int $objectifId): array
+    {
+        $qb = $this->getEntityManager()->createQueryBuilder()
+            ->select('AVG(n.satisfer) as avg', 'COUNT(n.id) as cnt')
+            ->from('App\\Entity\\Notejour', 'n')
+            ->andWhere('n.idObjectif = :id')
+            ->andWhere('n.satisfer IS NOT NULL')
+            ->setParameter('id', $objectifId);
+
+        $result = $qb->getQuery()->getSingleResult();
+
+        $avg = $result['avg'] !== null ? (float) $result['avg'] : null;
+        $count = isset($result['cnt']) ? (int) $result['cnt'] : 0;
+
+        return ['average' => $avg, 'count' => $count];
+    }
+
 //    /**
 //     * @return Objectif[] Returns an array of Objectif objects
 //     */
