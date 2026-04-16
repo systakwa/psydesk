@@ -29,6 +29,17 @@ final class ObjectifController extends AbstractController
         ]);
     }
 
+#[Route('/status-actifs', name: 'app_objectif_status_actifs', methods: ['GET'])]
+public function statusActifs(ObjectifRepository $objectifRepository): Response
+{
+    // Récupérer tous les objectifs avec status = 1 (true)
+    $objectifs = $objectifRepository->findBy(['status' => true]);
+
+    return $this->render('objectif/status_actifs.html.twig', [
+        'objectifs' => $objectifs,
+    ]);
+}
+
     /*
     #[Route('/new', name: 'app_objectif_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
@@ -56,7 +67,7 @@ final class ObjectifController extends AbstractController
             'form' => $form,
         ]);
     }*/
-        #[Route('/new-modal', name: 'app_objectif_new_modal', methods: ['GET'])]
+    #[Route('/new-modal', name: 'app_objectif_new_modal', methods: ['GET'])]
 public function newModal(): Response
 {
     $user = $this->getUser();

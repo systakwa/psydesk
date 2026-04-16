@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Notes de l'objectif</title>
+    <link href="/assets/css/styles.css" rel="stylesheet" />
+</head>
+<body class="bg-light">
+    <main class="container py-5">
+        <h1 class="mb-4">Notes pour l'objectif: {{ objectif.description }}</h1>
+        {% if notejours is empty %}
+            <div class="alert alert-info">Aucune note pour cet objectif.</div>
+        {% else %}
+            <div class="list-group">
+                {% for note in notejours %}
+                    <div class="list-group-item mb-2">
+                        <h5>{{ note.texteNote|slice(0,200) }}{% if note.texteNote|length > 200 %}...{% endif %}</h5>
+                        <div class="small text-muted">Date: {{ note.date ? note.date|date('Y-m-d') : '' }} • Créé: {{ note.createdAt ? note.createdAt|date('Y-m-d H:i') : '' }}</div>
+                        <p class="mt-2">Évaluation: {{ note.evaluation ? 'Oui' : 'Non' }} — Satisfaction: {{ note.satisfer }}/10</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </main>
+</body>
+</html>

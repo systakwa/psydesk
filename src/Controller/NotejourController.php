@@ -37,6 +37,8 @@ final class NotejourController extends AbstractController
         ]);
     }
 
+    
+
 #[Route('/objectif/{objectif_id}', name: 'app_notejour_by_objectif', methods: ['GET'])]
 public function indexByObjectif(int $objectif_id, EntityManagerInterface $entityManager): Response
 {
@@ -193,5 +195,25 @@ public function new(Request $request, EntityManagerInterface $entityManager): Re
         }
 
         return $this->redirectToRoute('app_notejour_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/psy',name: 'app_note_psy', methods: ['GET'])]
+    public function index_psy(NotejourRepository $notejourRepository): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+        // Récupérer les notes des objectifs de l'utilisateur
+        $notejours = $notejourRepository->createQueryBuilder('n')
+            ->join('n.idObjectif', 'o')
+            ->where('o.idPatient = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+
+        return $this->render('notejour/index_psy.html.twig', [
+            'notejours' => $notejours,
+        ]);
     }
 }
