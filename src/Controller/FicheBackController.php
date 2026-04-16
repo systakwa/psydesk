@@ -109,6 +109,7 @@ final class FicheBackController extends AbstractController
             'fiche' => $fiche,
             'patient' => $fiche->getPatient(),
             'psychologue' => $fiche->getPsychologue(),
+            'reservation' => $fiche->getReservation(),
         ]);
     }
 

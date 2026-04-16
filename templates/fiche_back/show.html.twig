@@ -3,7 +3,7 @@
 {% block title %}PsyDesk Admin - Détail fiche{% endblock %}
 
 {% block page_title %}Détail de la fiche{% endblock %}
-{% block page_subtitle %}Informations complètes de la fiche n°{{ fiche.id }}{% endblock %}
+{% block page_subtitle %}Informations complètes de la fiche{% endblock %}
 
 {% block page_header_action %}
     <div class="d-flex gap-2">
@@ -21,15 +21,6 @@
         <div class="col-md-8 mx-auto">
             <div class="card border-0 shadow">
                 <div class="card-body">
-                    <div class="row mb-4">
-                        <div class="col-md-12">
-                            <div class="info-card p-3 bg-dark rounded border-1" style="border: 1px solid #495057;">
-                                <label class="text-muted mb-1 small">ID de la fiche</label>
-                                <h5 class="mb-0 text-white">#{{ fiche.id }}</h5>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="info-section">
                         <h5 class="mb-3 text-white">Informations patient</h5>
                         <div class="bg-dark p-3 rounded mb-4 border-1" style="border: 1px solid #495057;">
@@ -53,7 +44,12 @@
 
                         <h5 class="mb-3 text-white">Réservation associée</h5>
                         <div class="bg-dark p-3 rounded mb-4 border-1" style="border: 1px solid #495057;">
-                            <p class="mb-0 text-light"><strong>Réservation ID :</strong> <span style="color: #ffc107;">{{ fiche.idReservation }}</span></p>
+                            {% if reservation %}
+                                <p class="mb-1 text-light"><strong>📅 Date :</strong> {{ reservation.datePrevue ? reservation.datePrevue|date('d/m/Y H:i') : 'Non définie' }}</p>
+                                <p class="mb-0 text-light"><strong>Status :</strong> <span style="color: #ffc107;">{{ reservation.status|upper }}</span></p>
+                            {% else %}
+                                <p class="mb-0 text-light text-muted">Aucune réservation associée</p>
+                            {% endif %}
                         </div>
 
                         <h5 class="mb-3 text-white">Date de création</h5>

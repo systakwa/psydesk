@@ -1,12 +1,13 @@
 {% extends 'base1.html.twig' %}
 
-{% block title %}Calendar View — Reservations — PsyDesk{% endblock %}
+{% block title %}Vue Calendrier — Réservations — PsyDesk{% endblock %}
 
-{% block page_title %}📅 Reservation Schedule{% endblock %}
-{% block page_subtitle %}Your reservations based on your working schedule{% endblock %}
+{% block page_title %}📅 Calendrier des Réservations{% endblock %}
+{% block page_subtitle %}Vos réservations basées sur votre planning de travail{% endblock %}
 
 {% block stylesheets %}
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.0/main.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.0/locales/fr.global.js" rel="stylesheet">
 
 <style>
     :root {
@@ -156,12 +157,12 @@
     {% if reservations|length == 0 %}
         <div class="alert alert-warning" role="alert" style="margin-bottom: 20px;">
             <i class="mdi mdi-alert-circle me-2"></i>
-            <strong>No reservations found.</strong>
+            <strong>Aucune réservation trouvée.</strong>
         </div>
     {% else %}
         <div class="alert alert-info" role="alert" style="margin-bottom: 20px;">
             <i class="mdi mdi-information me-2"></i>
-            Showing <strong>{{ reservations|length }}</strong> reservation(s).
+            Affichage de <strong>{{ reservations|length }}</strong> réservation(s).
         </div>
     {% endif %}
 
@@ -170,29 +171,30 @@
     <div class="calendar-legend">
         <div class="legend-item">
             <div class="legend-color" style="background-color: #f59e0b; border-color: #d97706;"></div>
-            <span>⏳ Pending</span>
+            <span>⧖ En attente</span>
         </div>
         <div class="legend-item">
             <div class="legend-color" style="background-color: #10b981; border-color: #059669;"></div>
-            <span>✅ Confirmed</span>
+            <span>✓ Confirmée</span>
         </div>
         <div class="legend-item">
             <div class="legend-color" style="background-color: #ef4444; border-color: #dc2626;"></div>
-            <span>❌ Cancelled</span>
+            <span>✗ Annulée</span>
         </div>
     </div>
 
     <div class="calendar-actions">
         <a href="{{ path('app_reservation_back_index') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="mdi mdi-arrow-left me-2"></i>Back to List
+            <i class="mdi mdi-arrow-left me-2"></i>Retour à la liste
         </a>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.0/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.0/locales/fr.global.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('🎯 Calendar Initializing...');
+        console.log('🎯 Calendrier en cours d\'initialisation...');
 
         var calendarEl = document.getElementById('calendar');
 
@@ -230,16 +232,23 @@
             {% endif %}
         {% endfor %}
 
-        console.log('📋 Total events:', events.length);
-        console.log('📌 Events:', events);
+        console.log('📋 Nombre total d\'événements:', events.length);
+        console.log('📌 Événements:', events);
 
         var calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'fr',
             initialView: 'dayGridMonth',
             initialDate: '{{ reservations|length > 0 ? reservations[0].datePrevue|date('Y-m-d') : 'now' }}',
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
                 right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            buttonText: {
+                today: 'Aujourd\'hui',
+                month: 'Mois',
+                week: 'Semaine',
+                day: 'Jour'
             },
             height: 'auto',
             contentHeight: 'auto',
@@ -254,7 +263,7 @@
             },
             events: events,
             eventClick: function(info) {
-                console.log('✅ Event clicked:', info.event.title, info.event.url);
+                console.log('✅ Événement cliqué:', info.event.title, info.event.url);
                 if (info.event.url) {
                     window.location.href = info.event.url;
                 }
@@ -262,7 +271,7 @@
         });
 
         calendar.render();
-        console.log('✨ Calendar rendered successfully');
+        console.log('✨ Calendrier rendu avec succès');
     });
 </script>
 

@@ -15,6 +15,9 @@ use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mime\Email;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 #[Route('/reservation/back')]
 final class ReservationBackController extends AbstractController
 {
@@ -185,8 +188,145 @@ final class ReservationBackController extends AbstractController
     }
 
     /**
-     * Calendar view for psychologist to see all reservations by month and day
+     * Display statistics for reservations
      */
+    #[Route('/stat', name: 'app_reservation_back_stat', methods: ['GET'])]
+    public function statistics(EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+
+        // Get all reservations for statistics
+        $query = $entityManager->getRepository(Reservation::class)->createQueryBuilder('r');
+
+        if ($this->isGranted('ROLE_PSYCHOLOGUE') && !$this->isGranted('ROLE_ADMIN')) {
+            $query->where('r.psychologue = :psychologue')
+                ->setParameter('psychologue', $user);
+        }
+
+        $allReservations = $query->getQuery()->getResult();
+
+        // Calculate statistics by status
+        $statsByStatus = [];
+        foreach ($allReservations as $reservation) {
+            $status = $reservation->getStatus();
+            if (!isset($statsByStatus[$status])) {
+                $statsByStatus[$status] = 0;
+            }
+            $statsByStatus[$status]++;
+        }
+
+        // Calculate statistics by psychologist (for admin)
+        $statsByPsychologist = [];
+        if ($this->isGranted('ROLE_ADMIN')) {
+            foreach ($allReservations as $reservation) {
+                $psy = $reservation->getPsychologue();
+                $psyName = $psy ? $psy->getPrenom() . ' ' . $psy->getNom() : 'N/A';
+                if (!isset($statsByPsychologist[$psyName])) {
+                    $statsByPsychologist[$psyName] = 0;
+                }
+                $statsByPsychologist[$psyName]++;
+            }
+        }
+
+        $statistics = [
+            'by_status' => $statsByStatus,
+            'by_psychologist' => $statsByPsychologist,
+            'total' => count($allReservations),
+        ];
+
+        return $this->render('reservation_back/statistics.html.twig', [
+            'statistics' => $statistics,
+        ]);
+    }
+
+    /**
+     * Export all reservations to PDF
+     */
+    #[Route('/pdf-all', name: 'app_reservation_back_pdf_all', methods: ['GET'])]
+    public function exportAllPdf(EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+
+        // Get all reservations
+        $query = $entityManager->getRepository(Reservation::class)->createQueryBuilder('r');
+
+        if ($this->isGranted('ROLE_PSYCHOLOGUE') && !$this->isGranted('ROLE_ADMIN')) {
+            $query->where('r.psychologue = :psychologue')
+                ->setParameter('psychologue', $user);
+        }
+
+        $reservations = $query->orderBy('r.datePrevue', 'DESC')->getQuery()->getResult();
+
+        $html = $this->renderView('reservation_back/reservations_pdf.html.twig', [
+            'reservations' => $reservations,
+        ]);
+
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="reservations_' . date('Y-m-d') . '.pdf"',
+            ]
+        );
+    }
+
+    /**
+     * Export all reservations to CSV (opens in Excel)
+     */
+    #[Route('/csv-all', name: 'app_reservation_back_excel', methods: ['GET'])]
+    public function exportExcel(EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+
+        // Get all reservations
+        $query = $entityManager->getRepository(Reservation::class)->createQueryBuilder('r');
+
+        if ($this->isGranted('ROLE_PSYCHOLOGUE') && !$this->isGranted('ROLE_ADMIN')) {
+            $query->where('r.psychologue = :psychologue')
+                ->setParameter('psychologue', $user);
+        }
+
+        $reservations = $query->orderBy('r.datePrevue', 'DESC')->getQuery()->getResult();
+
+        // Create CSV content
+        $csv = "Patient,Email Patient,Psychologue,Email Psychologue,Date Prévue,Date Disponibilité,Statut\n";
+
+        foreach ($reservations as $reservation) {
+            $patient = $reservation->getPatient();
+            $psychologue = $reservation->getPsychologue();
+
+            $patientName = $patient ? $patient->getPrenom() . ' ' . $patient->getNom() : 'N/A';
+            $patientEmail = $patient ? $patient->getEmail() : 'N/A';
+            $psyName = $psychologue ? $psychologue->getPrenom() . ' ' . $psychologue->getNom() : 'N/A';
+            $psyEmail = $psychologue ? $psychologue->getEmail() : 'N/A';
+            $datePrevue = $reservation->getDatePrevue() ? $reservation->getDatePrevue()->format('d/m/Y H:i') : 'N/A';
+            $dateDispo = $reservation->getDateDispo() ? $reservation->getDateDispo()->format('d/m/Y H:i') : 'N/A';
+            $status = $reservation->getStatus();
+
+            $csv .= "\"$patientName\",\"$patientEmail\",\"$psyName\",\"$psyEmail\",\"$datePrevue\",\"$dateDispo\",\"$status\"\n";
+        }
+
+        return new Response(
+            $csv,
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'text/csv; charset=utf-8',
+                'Content-Disposition' => 'attachment; filename="reservations_' . date('Y-m-d') . '.csv"',
+            ]
+        );
+    }
+    
+
     #[Route('/calendar', name: 'app_reservation_back_calendar', methods: ['GET'])]
     public function calendar(EntityManagerInterface $em): Response
     {
@@ -443,5 +583,33 @@ final class ReservationBackController extends AbstractController
         } catch (\Exception $e) {
             // Log error silently
         }
+    }
+
+    #[Route('/{id}/pdf', name: 'app_reservation_back_pdf', methods: ['GET'])]
+    public function exportPdf(Reservation $reservation): Response
+    {
+        $html = $this->renderView('reservation_back/reservation_pdf.html.twig', [
+            'reservation' => $reservation,
+            'patient' => $reservation->getPatient(),
+            'psychologue' => $reservation->getPsychologue(),
+        ]);
+
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return new Response(
+            $dompdf->output(),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="reservation_' . $reservation->getId() . '.pdf"',
+            ]
+        );
     }
 }

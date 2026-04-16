@@ -2,7 +2,7 @@
 {% if app.user %}
 <div id="chatbot-widget" class="chatbot-widget">
     {# Widget Button #}
-    <button id="chatbot-toggle-btn" class="chatbot-toggle-btn" title="Mental Health Assistant">
+    <button id="chatbot-toggle-btn" class="chatbot-toggle-btn" title="Assistant Santé Mentale">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
@@ -14,8 +14,8 @@
         {# Header #}
         <div class="chatbot-header">
             <div>
-                <h3>Mental Health Assistant</h3>
-                <p>AI Self-Assessment</p>
+                <h3>Assistant Santé Mentale</h3>
+                <p>Auto-évaluation IA</p>
             </div>
             <button id="chatbot-close-btn" class="chatbot-close-btn" aria-label="Close">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -27,7 +27,7 @@
 
         {# Disclaimer #}
         <div class="chatbot-disclaimer">
-            <strong>⚠️ Disclaimer:</strong> This is AI-powered self-assessment only, not professional medical advice.
+            <strong>⚠️ Avertissement:</strong> Ceci est une auto-évaluation alimentée par IA uniquement, pas un conseil médical professionnel.
         </div>
 
         {# Messages Container #}
@@ -39,7 +39,7 @@
                 <input type="text"
                        id="chatbot-input"
                        name="message"
-                       placeholder="Type your message..."
+                       placeholder="Tapez votre message..."
                        maxlength="500"
                        autocomplete="off">
                 <button type="submit" id="chatbot-send-btn" class="chatbot-send-btn" aria-label="Send">
@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 if (data.conversation.length === 0) {
                     // Show welcome message
-                    addMessage('AI', '👋 Hello! I\'m your mental health self-assessment assistant. Tell me how you\'ve been feeling lately.');
+                    addMessage('AI', '👋 Bonjour! Je suis votre assistant d\'auto-évaluation de la santé mentale. Dites-moi comment vous vous sentez dernièrement.');
                 } else {
                     // Load existing messages
                     data.conversation.forEach(msg => {
@@ -373,10 +373,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 addMessage('AI', data.message);
             } else {
-                addMessage('system', '❌ Error: ' + (data.error || 'Unknown error'));
+                addMessage('system', '❌ Erreur: ' + (data.error || 'Erreur inconnue'));
             }
         } catch (error) {
-            addMessage('system', '❌ Network error: ' + error.message);
+            addMessage('system', '❌ Erreur réseau: ' + error.message);
         } finally {
             sendBtn.disabled = false;
             input.focus();

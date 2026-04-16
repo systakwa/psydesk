@@ -3,13 +3,14 @@
 {% block title %}PsyDesk Admin - Détail réservation{% endblock %}
 
 {% block page_title %}Détail de la réservation{% endblock %}
-{% block page_subtitle %}Informations complètes de la réservation n°{{ reservation.id }}{% endblock %}
+{% block page_subtitle %}Informations complètes de la réservation{% endblock %}
 
 {% block page_header_action %}
     <div class="d-flex gap-2">
         <a href="{{ path('app_reservation_back_index') }}" class="btn btn-sm btn-secondary">
             ← Retour
         </a>
+       
         <a href="{{ path('app_reservation_back_edit', {'id': reservation.id}) }}" class="btn btn-sm btn-primary">
             Modifier
         </a>
@@ -22,13 +23,7 @@
             <div class="card border-0 shadow">
                 <div class="card-body">
                     <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="info-card p-3 bg-dark rounded border-1" style="border: 1px solid #495057;">
-                                <label class="text-muted mb-1 small">ID de réservation</label>
-                                <h5 class="mb-0 text-white">#{{ reservation.id }}</h5>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <div class="info-card p-3 bg-dark rounded border-1" style="border: 1px solid #495057;">
                                 <label class="text-muted mb-1 small">Statut actuel</label>
                                 <div>
