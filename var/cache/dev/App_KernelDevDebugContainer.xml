@@ -78,9 +78,6 @@
     </parameter>
     <parameter key="kernel.charset">UTF-8</parameter>
     <parameter key="kernel.container_class">App_KernelDevDebugContainer</parameter>
-    <parameter key="ai_api_url">%env(AI_API_URL)%</parameter>
-    <parameter key="ai_api_key">%env(AI_API_KEY)%</parameter>
-    <parameter key="ai_enabled">%env(bool:AI_ENABLED)%</parameter>
     <parameter key="event_dispatcher.event_aliases" type="collection">
       <parameter key="Symfony\Component\Console\Event\ConsoleCommandEvent">console.command</parameter>
       <parameter key="Symfony\Component\Console\Event\ConsoleErrorEvent">console.error</parameter>
@@ -483,9 +480,6 @@
     <service id="App\Service\ObjectiveEvaluationService" class="App\Service\ObjectiveEvaluationService" autowire="true" autoconfigure="true">
       <argument type="service" id="App\Repository\ObjectifRepository"/>
       <argument type="service" id=".debug.http_client"/>
-      <argument>%env(AI_API_URL)%</argument>
-      <argument>%env(AI_API_KEY)%</argument>
-      <argument>%env(bool:AI_ENABLED)%</argument>
     </service>
     <service id="argument_metadata_factory" class="Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadataFactory"/>
     <service id="argument_resolver.backed_enum_resolver" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\BackedEnumValueResolver">

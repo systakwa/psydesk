@@ -14,13 +14,13 @@ class ObjectiveEvaluationService
     private ?string $apiKey;
     private bool $aiEnabled;
 
-    public function __construct(ObjectifRepository $objectifRepository, HttpClientInterface $httpClient, ?string $apiUrl = null, ?string $apiKey = null, bool $aiEnabled = false)
+    public function __construct(ObjectifRepository $objectifRepository, HttpClientInterface $httpClient)
     {
         $this->objectifRepository = $objectifRepository;
         $this->httpClient = $httpClient;
-        $this->apiUrl = $apiUrl;
-        $this->apiKey = $apiKey;
-        $this->aiEnabled = $aiEnabled;
+        $this->apiUrl = $_ENV['AI_API_URL'] ?? '';
+        $this->apiKey = $_ENV['AI_API_KEY'] ?? '';
+        $this->aiEnabled = filter_var($_ENV['AI_ENABLED'] ?? '0', FILTER_VALIDATE_BOOLEAN);
     }
 
     public function evaluate(Objectif $objectif): array
