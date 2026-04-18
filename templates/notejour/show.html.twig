@@ -1,0 +1,42 @@
+
+
+{% block title %}Notejour{% endblock %}
+
+{% block body %}
+    <h1>Notejour</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ notejour.id }}</td>
+            </tr>
+            <tr>
+                <th>TexteNote</th>
+                <td>{{ notejour.texteNote }}</td>
+            </tr>
+            <tr>
+                <th>Date</th>
+                <td>{{ notejour.date ? notejour.date|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Evaluation</th>
+                <td>{{ notejour.evaluation ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Satisfer</th>
+                <td>{{ notejour.satisfer }}</td>
+            </tr>
+            <tr>
+                <th>Created_at</th>
+                <td>{{ notejour.createdAt ? notejour.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_notejour_index') }}">back to list</a>
+
+    <a href="{{ path('app_notejour_edit', {'id': notejour.id}) }}">edit</a>
+
+    {{ include('notejour/_delete_form.html.twig') }}
+{% endblock %}

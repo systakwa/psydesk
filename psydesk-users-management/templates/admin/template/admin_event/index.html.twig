@@ -1,0 +1,114 @@
+{% extends 'base.admin.html.twig' %}
+
+{% block title %}Evenement index{% endblock %}
+
+{% block body %}
+
+<section class="bg-night py-5">
+    <div class="container px-4">
+
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h2>📅 Événements</h2>
+
+        <a href="{{ path('admin_event_new') }}" class="btn btn-primary">
+            + Ajouter
+        </a>
+    </div>
+
+    <!-- SEARCH -->
+    <form id="searchForm" class="mb-3">
+        <input type="text" name="q" class="form-control" placeholder="🔍 Rechercher...">
+    </form>
+<div class="input-group shadow-sm mb-4">
+    
+    <span class="input-group-text bg-dark text-white">
+        🎯
+    </span>
+
+    <select id="statusFilter" class="form-select bg-dark text-white border-0">
+        <option value="">Tous les statuts</option>
+        <option value="actif">Actif</option>
+        <option value="en_attente">En attente</option>
+        <option value="validé">Validé</option>
+    </select>
+
+</div>
+    <!-- TABLE -->
+    <table class="table table-hover">
+
+        <thead class="table-dark">
+            <tr>
+                <th>Titre</th>
+                <th>
+                    <a href="#" class="sort text-white" data-sort="dateEvent">
+                        Date ⬍
+                    </a>
+                </th>
+                <th>Lieu</th>
+                <th>Type</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody id="eventTable">
+            {% include 'admin/template/admin_event/_table.html.twig' with {
+                evenements: evenements,
+                pages: pages
+            } %}
+        </tbody>
+
+    </table>
+
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    let page = 1;
+    let sort = 'dateEvent';
+    let direction = 'asc';
+
+    const searchInput = document.querySelector("input[name='q']");
+    const form = document.getElementById("searchForm");
+    const statusFilter = document.getElementById("statusFilter");
+
+    function loadEvents() {
+        const q = searchInput.value;
+        const status = statusFilter.value;
+
+        fetch(`/admin/event?q=${q}&status=${status}&page=${page}&sort=${sort}&direction=${direction}`, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById("eventTable").innerHTML = html;
+        });
+    }
+
+    form.addEventListener("submit", function(e) {
+        e.preventDefault();
+        page = 1;
+        loadEvents();
+    });
+
+    document.addEventListener("click", function(e) {
+        if (e.target.classList.contains("sort")) {
+            e.preventDefault();
+            sort = e.target.dataset.sort;
+            direction = direction === 'asc' ? 'desc' : 'asc';
+            loadEvents();
+        }
+    });
+
+    statusFilter.addEventListener("change", function() {
+        page = 1;
+        loadEvents();
+    });
+
+});
+</script>
+{% endblock %}

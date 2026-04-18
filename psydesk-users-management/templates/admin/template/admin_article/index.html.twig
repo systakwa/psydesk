@@ -1,0 +1,94 @@
+{% extends 'base.admin.html.twig' %}
+
+{% block body %}
+
+<div class="container py-4">
+
+
+<h2 class="mb-4">📄 Articles</h2>
+
+<!-- FILTRES -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <input id="searchInput" class="form-control" placeholder="🔍 Recherche...">
+    </div>
+
+    <div class="col-md-3">
+        <select id="statusFilter" class="form-select">
+            <option value="">Tous</option>
+            <option value="valide">Validé</option>
+            <option value="refuse">Refusé</option>
+        </select>
+    </div>
+</div>
+
+<!-- TABLE -->
+<div id="articlesTable">
+    {% include 'admin/template/admin_article/_table.html.twig' %}
+</div>
+
+<a href="{{ path('admin_article_new') }}" class="btn btn-dark mt-3">Ajouter</a>
+
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    let page = 1;
+    let sort = 'id';
+    let direction = 'asc';
+
+    const searchInput = document.getElementById("searchInput");
+    const statusFilter = document.getElementById("statusFilter");
+
+    function loadArticles() {
+        const q = searchInput.value;
+        const status = statusFilter.value;
+
+        fetch(`/admin/article?q=${q}&status=${status}&page=${page}&sort=${sort}&direction=${direction}`, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById("articlesTable").innerHTML = html;
+        });
+    }
+
+    // Recherche dynamique
+    let timeout;
+    searchInput.addEventListener("keyup", function () {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            page = 1;
+            loadArticles();
+        }, 300);
+    });
+
+    statusFilter.addEventListener("change", () => {
+        page = 1;
+        loadArticles();
+    });
+
+    // Tri dynamique
+    document.addEventListener("click", function(e) {
+        if (e.target.classList.contains("sort")) {
+            sort = e.target.dataset.sort;
+            direction = direction === 'asc' ? 'desc' : 'asc';
+            loadArticles();
+        }
+    });
+
+    // Pagination
+    document.addEventListener("click", function(e) {
+        if (e.target.classList.contains("page-link")) {
+            e.preventDefault();
+            page = e.target.dataset.page;
+            loadArticles();
+        }
+    });
+
+});
+</script>
+
+{% endblock %}

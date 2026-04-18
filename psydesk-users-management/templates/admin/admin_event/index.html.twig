@@ -1,0 +1,120 @@
+{% extends 'base.admin.html.twig' %}
+
+{% block title %}Evenement index{% endblock %}
+
+{% block body %}
+
+<!-- SECTION EVENTS -->
+<section class="bg-light py-5">
+    <div class="container px-5">
+
+        <!-- TITLE -->
+        <div class="text-center mb-5">
+            <h1 class="fw-bolder">Nos événements</h1>
+            <p class="lead text-muted">Découvrez et participez à nos événements</p>
+        </div>
+
+        <!-- FLASH MESSAGES -->
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+
+        <!-- SEARCH -->
+        <form method="get" class="mb-4">
+            <input type="text" name="q" class="form-control" placeholder="Rechercher événement...">
+        </form>
+
+        <!-- TABLE -->
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Titre</th>
+                        <th>
+                            <a href="?sort=date" class="text-white text-decoration-none">Date</a>
+                        </th>
+                        <th>Lieu</th>
+                        <th>Type</th>
+                        <th>Statut</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for evenement in evenements %}
+                    <tr>
+                        <td class="fw-bold">{{ evenement.titre }}</td>
+                        <td>{{ evenement.dateEvent ? evenement.dateEvent|date('Y-m-d') : '' }}</td>
+                        <td>{{ evenement.lieu }}</td>
+                        <td>{{ evenement.type }}</td>
+                        <td>
+                            <span class="badge bg-secondary">{{ evenement.statut }}</span>
+                        </td>
+                        <td class="text-center">
+                            <a href="{{ path('admin_event_show', {'id': evenement.id}) }}" class="btn btn-sm btn-outline-primary">Show</a>
+
+                            <a href="{{ path('admin_event_edit', {'id': evenement.id}) }}" class="btn btn-sm btn-outline-warning">Edit</a>
+
+                           <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#participantsModal{{ evenement.id }}">
+    👥 Voir
+</button>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center">Aucun événement</td>
+                    </tr>
+                    <div class="modal fade" id="participantsModal{{ evenement.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Participants - {{ evenement.titre }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                {% for p in evenement.participations %}
+                    <div class="d-flex align-items-center mb-2">
+
+                        <img src="https://i.pravatar.cc/40" 
+                             class="rounded-circle me-2">
+
+                        <div>
+                            <strong>{{ p.user.prenom }} {{ p.user.nom }}</strong><br>
+                            <small class="text-muted">{{ p.user.email }}</small>
+                        </div>
+
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">Aucun participant</p>
+                {% endfor %}
+
+            </div>
+
+        </div>
+    </div>
+</div>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- BUTTON -->
+        <div class="text-center mt-4">
+            <a href="{{ path('admin_event_new') }}" class="btn btn-primary">
+                Créer un événement
+            </a>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

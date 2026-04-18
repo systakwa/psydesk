@@ -1,0 +1,12 @@
+{% extends 'base_admin.html.twig' %}
+
+{% block body %}
+<h2>Modifier événement</h2>
+
+{{ form_start(form) }}
+    {{ form_widget(form) }}
+
+    <button class="btn btn-warning">Update</button>
+{{ form_end(form) }}
+
+{% endblock %}

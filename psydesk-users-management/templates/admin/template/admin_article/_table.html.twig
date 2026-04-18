@@ -1,0 +1,54 @@
+<table class="table table-hover">
+
+<thead class="table-dark">
+<tr>
+    <th><a href="#" class="sort text-white" data-sort="id">ID ⬍</a></th>
+    <th>Contenu</th>
+    <th>Image</th>
+    <th><a href="#" class="sort text-white" data-sort="statut">Statut ⬍</a></th>
+    <th>Actions</th>
+</tr>
+</thead>
+
+<tbody>
+{% for article in articles %}
+<tr>
+    <td>{{ article.id }}</td>
+    <td>{{ article.contenu }}</td>
+
+
+<td>
+    {% if article.image %}
+        <img src="{{ asset('uploads/' ~ article.image) }}" width="70">
+    {% endif %}
+</td>
+
+<td>
+    <span class="badge bg-{{ article.statut == 'valide' ? 'success' : 'danger' }}">
+        {{ article.statut }}
+    </span>
+</td>
+
+<td>
+    <a href="{{ path('admin_article_edit', {'id': article.id}) }}" class="btn btn-warning btn-sm">✏</a>
+    <a href="{{ path('admin_article_valider', {'id': article.id}) }}" class="btn btn-success btn-sm">✔</a>
+    <a href="{{ path('admin_article_refuser', {'id': article.id}) }}" class="btn btn-dark btn-sm">✖</a>
+</td>
+
+
+</tr>
+{% endfor %}
+</tbody>
+
+</table>
+
+<!-- PAGINATION -->
+
+<nav>
+<ul class="pagination">
+
+{% for i in 1..pages %} <li class="page-item"> <a href="#" class="page-link" data-page="{{ i }}">{{ i }}</a> </li>
+{% endfor %}
+
+</ul>
+</nav>

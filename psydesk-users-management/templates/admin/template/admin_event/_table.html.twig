@@ -1,0 +1,80 @@
+{% for evenement in evenements %}
+
+<tr>
+    <td>{{ evenement.titre }}</td>
+    <td>{{ evenement.dateEvent ? evenement.dateEvent|date('d/m/Y') }}</td>
+    <td>{{ evenement.lieu }}</td>
+    <td>{{ evenement.type }}</td>
+
+    <td>
+        <span class="badge bg-{{ evenement.statut == 'actif' ? 'success' : 'secondary' }}">
+            {{ evenement.statut }}
+        </span>
+    </td>
+
+    <td>
+        <a href="{{ path('admin_event_show', {'id': evenement.id}) }}">👁</a>
+        <a href="{{ path('admin_event_edit', {'id': evenement.id}) }}">✏️</a>
+
+        <button class="btn btn-info btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#participantsModal{{ evenement.id }}">
+            👥 Voir
+        </button>
+    </td>
+</tr>
+
+<!-- ✅ MODAL DOIT ÊTRE ICI -->
+<div class="modal fade" id="participantsModal{{ evenement.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Participants - {{ evenement.titre }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                {% for p in evenement.participations %}
+                    <div class="d-flex align-items-center mb-2">
+
+                        <img src="https://i.pravatar.cc/40" class="rounded-circle me-2">
+
+                        <div>
+                            <strong>{{ p.user.prenom }} {{ p.user.nom }}</strong><br>
+                            <small class="text-muted">{{ p.user.email }}</small>
+                        </div>
+
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">Aucun participant</p>
+                {% endfor %}
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% else %}
+<tr>
+    <td colspan="6" class="text-center">Aucun événement</td>
+</tr>
+{% endfor %}
+
+<!-- PAGINATION -->
+
+<tr>
+    <td colspan="6">
+        <ul class="pagination justify-content-center">
+            {% for i in 1..pages %}
+                <li class="page-item">
+                    <a href="#" class="page-link" data-page="{{ i }}">{{ i }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </td>
+</tr>

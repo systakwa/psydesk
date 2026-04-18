@@ -1,0 +1,9 @@
+framework:
+    messenger:
+        transports:
+            # Transport synchrone = envoi immédiat
+            sync: 'sync://'
+
+        routing:
+            # Envoyer les emails immédiatement (pas de file d'attente)
+            'Symfony\Component\Mailer\Messenger\SendEmailMessage': sync

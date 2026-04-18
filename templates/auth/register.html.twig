@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription | PSYDESK</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            background: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .register-card {
+            display: flex;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 1000px;
+            width: 100%;
+            animation: fadeInUp 0.6s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .register-left {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 50px;
+            color: white;
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-align: center;
+        }
+        .sidebar-logo-container {
+            margin: 20px 0;
+        }
+        .sidebar-logo {
+            max-width: 180px;
+            height: auto;
+            filter: brightness(0) invert(1);
+        }
+        .register-left h2 { font-size: 2rem; font-weight: bold; margin-bottom: 20px; }
+        .register-left p { opacity: 0.9; line-height: 1.6; }
+        .feature-list { margin-top: 40px; text-align: left; }
+        .feature-item { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .feature-item i { font-size: 22px; }
+        .feature-item span { font-size: 16px; }
+        .register-right { padding: 40px; width: 50%; background: white; }
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 12px 15px;
+            border: 1px solid #e2e8f0;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #cd4cad;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+            outline: none;
+        }
+        .form-control.is-invalid, .form-select.is-invalid {
+            border-color: #a767a1;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc2626'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc2626' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+        .form-control.is-valid, .form-select.is-valid {
+            border-color: #b54cac;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2310b981' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+        }
+        .invalid-feedback { color: #6389fc; font-size: 12px; margin-top: 5px; display: block; }
+        .valid-feedback { color: #6389fc; font-size: 12px; margin-top: 5px; display: block; }
+        .form-label { font-weight: 600; margin-bottom: 8px; display: block; color: #c26fb6; }
+        .btn-register {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            width: 100%;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-register:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102,126,234,0.4); }
+        .btn-face-capture {
+            background: linear-gradient(135deg, #38b2ac, #319795);
+            margin-top: 10px;
+        }
+        .btn-face-capture:hover {
+            background: linear-gradient(135deg, #319795, #2c7a7b);
+        }
+        .text-center { text-align: center; }
+        .mt-3 { margin-top: 15px; }
+        .mt-4 { margin-top: 20px; }
+        .mb-4 { margin-bottom: 20px; }
+        .alert { padding: 12px; border-radius: 10px; margin-bottom: 20px; }
+        .alert-success { background: #d1fae5; color: #065f46; border: none; }
+        .text-decoration-none { text-decoration: none; }
+        
+        /* Style pour l'upload d'image */
+        .image-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-top: 10px;
+            border: 3px solid #667eea;
+        }
+        .current-image {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* Style pour la capture faciale */
+        .face-capture-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .face-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 10px auto;
+            border: 3px solid #667eea;
+            display: none;
+        }
+        .face-placeholder {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px auto;
+            cursor: pointer;
+        }
+        .face-placeholder i {
+            font-size: 40px;
+            color: #94a3b8;
+        }
+        .face-status {
+            font-size: 12px;
+            margin-top: 8px;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .face-status.success { background: #d1fae5; color: #065f46; }
+        .face-status.error { background: #fee2e2; color: #991b1b; }
+        .face-status.info { background: #e0e7ff; color: #3730a3; }
+        
+        @media (max-width: 768px) {
+            .register-card { flex-direction: column; }
+            .register-left, .register-right { width: 100%; }
+            .register-left { padding: 30px; }
+            .sidebar-logo { max-width: 120px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-card">
+        <div class="register-left">
+            <div>
+                <h2>Inscription</h2>
+                <p>Rejoignez notre communauté et profitez de tous nos services.</p>
+                <div class="sidebar-logo-container">
+                    <img src="{{ asset('assets/images/logop.png') }}" 
+                         alt="Logo PSYDESK" 
+                         class="sidebar-logo"
+                         onerror="this.style.display='none'">
+                </div>
+            </div>
+            <div class="feature-list">
+                <div class="feature-item"><i class="ri-checkbox-circle-line"></i><span>Accès illimité</span></div>
+                <div class="feature-item"><i class="ri-shield-star-line"></i><span>Sécurisé</span></div>
+                <div class="feature-item"><i class="ri-customer-service-line"></i><span>Support 24/7</span></div>
+            </div>
+        </div>
+        <div class="register-right">
+            <h3 class="text-center mb-4" style="color: #1e293b;">Créez votre compte</h3>
+            
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+            
+            {{ form_start(registrationForm, {'attr': {'id': 'registerForm', 'novalidate': 'novalidate', 'enctype': 'multipart/form-data'}}) }}
+                
+                <!-- Champ IMAGE -->
+                <div style="margin-bottom: 20px; text-align: center;">
+                    {{ form_label(registrationForm.image, 'Photo de profil', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(registrationForm.image, {'attr': {'class': 'form-control', 'id': 'imageInput', 'accept': 'image/jpeg,image/png,image/jpg,image/gif'}}) }}
+                    <img id="imagePreview" class="image-preview" src="#" style="display: none;">
+                    <div class="current-image" id="currentImageInfo"></div>
+                    {{ form_errors(registrationForm.image) }}
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        {{ form_label(registrationForm.nom, 'Nom', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(registrationForm.nom, {'attr': {'class': 'form-control', 'placeholder': 'Dupont', 'id': 'nom', 'minlength': '2'}}) }}
+                        <div class="invalid-feedback">Le nom doit contenir au moins 2 caractères.</div>
+                        <div class="valid-feedback">Nom valide !</div>
+                        {{ form_errors(registrationForm.nom) }}
+                    </div>
+                    <div style="flex: 1;">
+                        {{ form_label(registrationForm.prenom, 'Prénom', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(registrationForm.prenom, {'attr': {'class': 'form-control', 'placeholder': 'Jean', 'id': 'prenom', 'minlength': '2'}}) }}
+                        <div class="invalid-feedback">Le prénom doit contenir au moins 2 caractères.</div>
+                        <div class="valid-feedback">Prénom valide !</div>
+                        {{ form_errors(registrationForm.prenom) }}
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    {{ form_label(registrationForm.age, 'Âge', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(registrationForm.age, {'attr': {'class': 'form-control', 'placeholder': '25', 'id': 'age', 'min': '18', 'max': '120'}}) }}
+                    <div class="invalid-feedback">L'âge doit être compris entre 18 et 120 ans.</div>
+                    <div class="valid-feedback">Âge valide !</div>
+                    {{ form_errors(registrationForm.age) }}
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    {{ form_label(registrationForm.email, 'Email', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control', 'placeholder': 'exemple@email.com', 'id': 'email'}}) }}
+                    <div class="invalid-feedback">Veuillez entrer un email valide.</div>
+                    <div class="valid-feedback">Email valide !</div>
+                    {{ form_errors(registrationForm.email) }}
+                </div>
+
+                <!-- SECTION RECONNAISSANCE FACIALE -->
+                <div class="face-capture-container">
+                    <label class="form-label"> Reconnaissance faciale</label>
+                    
+                    <!-- Caméra cachée -->
+                    <video id="faceVideo" autoplay muted playsinline style="display: none;"></video>
+                    <canvas id="faceCanvas" style="display: none;"></canvas>
+                    
+                    <!-- Zone d'aperçu -->
+                    <div id="facePlaceholder" class="face-placeholder" onclick="startFaceCapture()">
+                        <i class="ri-camera-line"></i>
+                    </div>
+                    <img id="facePreview" class="face-preview" src="#" alt="Visage capturé">
+                    
+                    <div id="faceStatus" class="face-status info"> Cliquez pour capturer votre visage</div>
+                    
+                    <button type="button" id="captureFaceBtn" class="btn-register btn-face-capture">
+                        <i class="ri-camera-line"></i> Capturer mon visage
+                    </button>
+                    
+                    <input type="hidden" id="face_token" name="face_token">
+                </div>
+
+                <div style="margin-bottom: 15px; display: none;">
+                    {{ form_label(registrationForm.role, 'Je suis', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(registrationForm.role, {'attr': {'class': 'form-select', 'id': 'role'}}) }}
+                </div>
+                
+                <input type="hidden" name="role" value="ROLE_PATIENT">
+
+                <div style="margin-bottom: 20px;">
+                    {{ form_label(registrationForm.plainPassword, 'Mot de passe', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control', 'placeholder': 'Minimum 6 caractères', 'id': 'password', 'minlength': '6'}}) }}
+                    <div class="invalid-feedback">Le mot de passe doit contenir au moins 6 caractères.</div>
+                    <div class="valid-feedback">Mot de passe valide !</div>
+                    {{ form_errors(registrationForm.plainPassword) }}
+                </div>
+
+                <button type="submit" class="btn-register">
+                    <i class="ri-user-add-line me-2"></i>S'inscrire
+                </button>
+
+                <div class="text-center mt-3">
+                    <a href="{{ path('app_login') }}" class="text-decoration-none" style="color: #667eea;">Déjà un compte ? Se connecter</a>
+                </div>
+            {{ form_end(registrationForm) }}
+        </div>
+    </div>
+    
+    <script>
+        // Validation en temps réel
+        const nomInput = document.getElementById('nom');
+        const prenomInput = document.getElementById('prenom');
+        const ageInput = document.getElementById('age');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        
+        // Preview de l'image
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        
+        if (imageInput) {
+            imageInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    imagePreview.style.display = 'none';
+                }
+            });
+        }
+        
+        // ========== RECONNAISSANCE FACIALE ==========
+        const video = document.getElementById('faceVideo');
+        const canvas = document.getElementById('faceCanvas');
+        const facePreview = document.getElementById('facePreview');
+        const facePlaceholder = document.getElementById('facePlaceholder');
+        const faceStatus = document.getElementById('faceStatus');
+        const faceTokenInput = document.getElementById('face_token');
+        let stream = null;
+        let isCapturing = false;
+        
+        async function startFaceCapture() {
+            if (isCapturing) return;
+            isCapturing = true;
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                faceStatus.textContent = ' Caméra active. Positionnez votre visage puis cliquez sur "Capturer"';
+                faceStatus.className = 'face-status info';
+                
+                // Attendre 2 secondes puis capturer
+                setTimeout(() => {
+                    captureFace();
+                }, 2000);
+            } catch (error) {
+                faceStatus.textContent = ' Impossible d\'accéder à la caméra: ' + error.message;
+                faceStatus.className = 'face-status error';
+                isCapturing = false;
+            }
+        }
+        
+        async function captureFace() {
+            if (!stream) {
+                faceStatus.textContent = ' Caméra non disponible';
+                faceStatus.className = 'face-status error';
+                isCapturing = false;
+                return;
+            }
+            
+            faceStatus.textContent = ' Analyse du visage en cours...';
+            faceStatus.className = 'face-status info';
+            
+            // Capturer l'image
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Afficher l'aperçu
+            facePreview.src = canvas.toDataURL('image/jpeg');
+            facePreview.style.display = 'block';
+            facePlaceholder.style.display = 'none';
+            
+            // Envoyer au serveur
+            canvas.toBlob(async (blob) => {
+                const formData = new FormData();
+                formData.append('image', blob, 'face.jpg');
+                
+                try {
+                    const response = await fetch('/face/register', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        faceTokenInput.value = result.face_token;
+                        faceStatus.textContent = ' Visage enregistré avec succès !';
+                        faceStatus.className = 'face-status success';
+                    } else {
+                        faceStatus.textContent = ' ' + result.message;
+                        faceStatus.className = 'face-status error';
+                    }
+                } catch (error) {
+                    faceStatus.textContent = ' Erreur de communication avec le serveur';
+                    faceStatus.className = 'face-status error';
+                }
+                
+                // Arrêter la caméra
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    stream = null;
+                    video.style.display = 'none';
+                }
+                isCapturing = false;
+            }, 'image/jpeg');
+        }
+        
+        function validateField(input, isValid) {
+            if (input.value) {
+                if (isValid) {
+                    input.classList.remove('is-invalid');
+                    input.classList.add('is-valid');
+                } else {
+                    input.classList.remove('is-valid');
+                    input.classList.add('is-invalid');
+                }
+            }
+            return isValid && input.value;
+        }
+        
+        function validateNom() {
+            return validateField(nomInput, nomInput.value.length >= 2);
+        }
+        
+        function validatePrenom() {
+            return validateField(prenomInput, prenomInput.value.length >= 2);
+        }
+        
+        function validateAge() {
+            const age = parseInt(ageInput.value);
+            return validateField(ageInput, age >= 18 && age <= 120);
+        }
+        
+        function validateEmail() {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return validateField(emailInput, emailRegex.test(emailInput.value));
+        }
+        
+        function validatePassword() {
+            return validateField(passwordInput, passwordInput.value.length >= 6);
+        }
+        
+        nomInput.addEventListener('input', validateNom);
+        prenomInput.addEventListener('input', validatePrenom);
+        ageInput.addEventListener('input', validateAge);
+        emailInput.addEventListener('input', validateEmail);
+        passwordInput.addEventListener('input', validatePassword);
+        
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const isNomValid = validateNom();
+            const isPrenomValid = validatePrenom();
+            const isAgeValid = validateAge();
+            const isEmailValid = validateEmail();
+            const isPasswordValid = validatePassword();
+            
+            if (!isNomValid || !isPrenomValid || !isAgeValid || !isEmailValid || !isPasswordValid) {
+                e.preventDefault();
+                alert('Veuillez corriger les erreurs dans le formulaire.');
+            }
+        });
+        
+        // Bouton de capture faciale
+        document.getElementById('captureFaceBtn').addEventListener('click', startFaceCapture);
+    </script>
+</body>
+</html>

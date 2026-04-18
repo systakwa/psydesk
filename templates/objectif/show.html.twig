@@ -1,0 +1,50 @@
+
+
+{% block title %}Objectif{% endblock %}
+
+{% block body %}
+    <h1>Objectif</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ objectif.id }}</td>
+            </tr>
+            <tr>
+                <th>Decription</th>
+                <td>{{ objectif.description }}</td>
+            </tr>
+            <tr>
+                <th>Datefin</th>
+                <td>{{ objectif.datefin ? objectif.datefin|date('Y-m-d') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Status</th>
+                <td>{{ objectif.status ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>Nb_note</th>
+                <td>{{ objectif.nbNote }}</td>
+            </tr>
+            <tr>
+                <th>Nb_jour</th>
+                <td>{{ objectif.nbJour }}</td>
+            </tr>
+            <tr>
+                <th>Created_at</th>
+                <td>{{ objectif.createdAt ? objectif.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Etat</th>
+                <td>{{ objectif.etat ? 'Yes' : 'No' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_objectif_index') }}">back to list</a>
+
+    <a href="{{ path('app_objectif_edit', {'id': objectif.id}) }}">edit</a>
+
+    {{ include('objectif/_delete_form.html.twig') }}
+{% endblock %}

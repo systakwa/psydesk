@@ -1,0 +1,89 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier un utilisateur | Administration{% endblock %}
+
+{% block body %}
+<div style="display: flex; min-height: 100vh;">
+    <div style="width: 260px; background: linear-gradient(135deg, #b95ec3 0%, #b95ec3 100%); color: white; padding: 20px;">
+        <h3 style="text-align: center; margin-bottom: 30px;">⚡ psydesk </h3>
+        <a href="{{ path('app_admin_dashboard') }}" style="display: block; padding: 10px; color: white; text-decoration: none; margin-bottom: 10px;">📊 Tableau de bord</a>
+        <a href="{{ path('app_logout') }}" style="display: block; padding: 10px; color: white; text-decoration: none;">🚪 Déconnexion</a>
+    </div>
+
+    <div style="flex: 1; padding: 30px; background: #f5f7fb; display: flex; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 20px; padding: 35px; max-width: 550px; width: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #d06dd3 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                    <span style="font-size: 35px; color: white;">✏️</span>
+                </div>
+                <h2 style="margin: 0; color: #b457b4;">Modifier l'utilisateur</h2>
+                <p style="color: #cd93de; margin-top: 5px;">ID #{{ user.id }}</p>
+            </div>
+            
+            {% for message in app.flashes('success') %}
+                <div style="background: #e26fe2; color: #bb61bb; padding: 12px; border-radius: 10px; margin-bottom: 20px;">{{ message }}</div>
+            {% endfor %}
+            
+            {% for message in app.flashes('error') %}
+                <div style="background: #fee2e2; color: #d652c7; padding: 12px; border-radius: 10px; margin-bottom: 20px;">{{ message }}</div>
+            {% endfor %}
+            
+            <form method="post">
+                <div style="margin-bottom: 18px;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #e757e7;">Nom complet</label>
+                    <div style="display: flex; gap: 15px;">
+                        <input type="text" name="nom" value="{{ user.nom }}" 
+                               style="flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px;"
+                               required placeholder="Nom">
+                        <input type="text" name="prenom" value="{{ user.prenom }}" 
+                               style="flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px;"
+                               required placeholder="Prénom">
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 18px;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #507fca;">Âge</label>
+                    <input type="number" name="age" value="{{ user.age }}" 
+                           style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px;" 
+                           required min="1" max="120">
+                </div>
+                
+                <div style="margin-bottom: 18px;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #7fa4df;">Email</label>
+                    <input type="email" name="email" value="{{ user.email }}" 
+                           style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px;" 
+                           required>
+                </div>
+                
+                <div style="margin-bottom: 18px;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #6091df;">Rôle</label>
+                    <select name="role" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px;">
+                        <option value="ROLE_PATIENT" {% if 'ROLE_PATIENT' in user.rols %}selected{% endif %}> Patient</option>
+                        <option value="ROLE_PSYCHOLOGUE" {% if 'ROLE_PSYCHOLOGUE' in user.role %}selected{% endif %}> Psychologue</option>
+                        <option value="ROLE_ADMIN" {% if 'ROLE_ADMIN' in user.role %}selected{% endif %}> Administrateur</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 25px;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #1862d9;">Nouveau mot de passe</label>
+                    <input type="password" name="password" 
+                           style="width: 100%; padding: 12px; border: 2px solid #3375cc; border-radius: 10px; font-size: 14px;" 
+                           placeholder="Laisser vide pour ne pas changer">
+                    <small style="color: #b991bd;">Minimum 6 caractères</small>
+                </div>
+                
+                <div style="display: flex; gap: 15px; margin-top: 10px;">
+                    <button type="submit" 
+                            style="flex: 1; background: linear-gradient(135deg, #b694c4 0%, #764ba2 100%); color: white; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.2s;">
+                         Enregistrer
+                    </button>
+                    <a href="{{ path('app_admin_dashboard') }}" 
+                       style="flex: 1; background: #a158b6; color: white; text-align: center; padding: 14px; border-radius: 12px; text-decoration: none; font-weight: 600;">
+                         Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

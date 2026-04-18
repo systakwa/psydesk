@@ -1,0 +1,55 @@
+security:
+    password_hashers:
+        App\Entity\Users: 'auto'
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\Users
+                property: email
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        
+        main:
+            lazy: true
+            provider: app_user_provider
+            
+            # AJOUTEZ entry_point ICI - IMPORTANT !
+            entry_point: App\Security\LoginFormAuthenticator
+            
+            custom_authenticators:
+                - App\Security\LoginFormAuthenticator
+                - App\Security\GoogleAuthenticator
+            
+            logout:
+                path: app_logout
+                target: app_login
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800
+
+    access_control:
+        - { path: ^/login$, role: PUBLIC_ACCESS }
+        - { path: ^/register$, role: PUBLIC_ACCESS }
+        - { path: ^/reset-password$, role: PUBLIC_ACCESS }
+        - { path: ^/connect/google, role: PUBLIC_ACCESS }
+        - { path: ^/patient/dashboard, role: ROLE_PATIENT }
+        - { path: ^/psychologue/dashboard, role: ROLE_PSYCHOLOGUE }
+        - { path: ^/admin, role: ROLE_ADMIN }
+        - { path: ^/dashboard, role: IS_AUTHENTICATED_FULLY }
+        - { path: ^/profile, role: IS_AUTHENTICATED_FULLY }
+
+    role_hierarchy:
+        ROLE_ADMIN: [ROLE_USER, ROLE_PSYCHOLOGUE, ROLE_PATIENT]
+        ROLE_PSYCHOLOGUE: [ROLE_USER, ROLE_PATIENT]
+        ROLE_PATIENT: [ROLE_USER]
+
+when@test:
+    security:
+        password_hashers:
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4
