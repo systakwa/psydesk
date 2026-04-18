@@ -12,13 +12,15 @@ class ObjectiveEvaluationService
     private HttpClientInterface $httpClient;
     private ?string $apiUrl;
     private ?string $apiKey;
+    private bool $aiEnabled;
 
-    public function __construct(ObjectifRepository $objectifRepository, HttpClientInterface $httpClient, ?string $apiUrl = null, ?string $apiKey = null)
+    public function __construct(ObjectifRepository $objectifRepository, HttpClientInterface $httpClient, ?string $apiUrl = null, ?string $apiKey = null, bool $aiEnabled = false)
     {
         $this->objectifRepository = $objectifRepository;
         $this->httpClient = $httpClient;
         $this->apiUrl = $apiUrl;
         $this->apiKey = $apiKey;
+        $this->aiEnabled = $aiEnabled;
     }
 
     public function evaluate(Objectif $objectif): array
@@ -43,18 +45,34 @@ class ObjectiveEvaluationService
         ];
 
         $aiResponse = null;
-        if ($this->apiUrl) {
+        // Only call external AI API when URL is configured and AI is enabled.
+        if ($this->apiUrl && $this->aiEnabled) {
             try {
                 $headers = ['Content-Type' => 'application/json'];
                 if ($this->apiKey) {
                     $headers['Authorization'] = 'Bearer ' . $this->apiKey;
                 }
 
-                $response = $this->httpClient->request('POST', $this->apiUrl, [
-                    'json' => [
-                        'prompt' => $this->buildPrompt($payload),
+                $prompt = $this->buildPrompt($payload);
+
+                // Support provider-specific payloads. If the API URL contains "groq",
+                // send payload under an `input` key (common for Groq-style endpoints).
+                if (stripos($this->apiUrl, 'groq') !== false) {
+                    $json = [
+                        'input' => [
+                            'prompt' => $prompt,
+                            'meta' => $payload,
+                        ],
+                    ];
+                } else {
+                    $json = [
+                        'prompt' => $prompt,
                         'meta' => $payload,
-                    ],
+                    ];
+                }
+
+                $response = $this->httpClient->request('POST', $this->apiUrl, [
+                    'json' => $json,
                     'headers' => $headers,
                 ]);
 

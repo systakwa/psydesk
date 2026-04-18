@@ -63,7 +63,16 @@ final class ObjectifApiController extends AbstractController
             return new JsonResponse(['error' => 'Objectif not found'], 404);
         }
 
-        $result = $evaluationService->evaluate($objectif);
+        try {
+            $result = $evaluationService->evaluate($objectif);
+        } catch (\Throwable $e) {
+            // Return JSON with error details in dev to help debugging
+            return new JsonResponse([
+                'error' => 'Evaluation failed',
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], 500);
+        }
 
         // If query param json=1 is provided, always return JSON.
         $wantJson = $request->query->get('json');
