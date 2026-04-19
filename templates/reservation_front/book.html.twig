@@ -4,8 +4,7 @@
 {% block page_hero %}
 <section class="py-4 bg-white border-bottom">
     <div class="container px-5">
-        <a href="javascript:history.back()"
-           class="btn btn-sm btn-outline-secondary">
+        <a href="javascript:history.back()" class="btn btn-sm btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i>Retour aux créneaux
         </a>
     </div>
@@ -63,6 +62,48 @@
                     </div>
                 </div>
 
+                {# ── Session Type Selection ── #}
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <p class="fw-bolder mb-3">
+                            <i class="bi bi-display me-2 text-primary"></i>Type de séance
+                        </p>
+
+                        <div class="row g-3" id="sessionTypeCards">
+                            <div class="col-6">
+                                <label class="session-type-card w-100 h-100" for="typeOnline">
+                                    <input type="radio" name="sessionType" id="typeOnline" value="online" class="d-none" checked>
+                                    <div class="session-card-inner text-center p-4 rounded-3 border-2 border selected" id="cardOnline">
+                                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">💻</div>
+                                        <div class="fw-bolder">En ligne</div>
+                                        <div class="small text-muted mt-1">Lien Meet généré</div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <label class="session-type-card w-100 h-100" for="typeOnsite">
+                                    <input type="radio" name="sessionType" id="typeOnsite" value="onsite" class="d-none">
+                                    <div class="session-card-inner text-center p-4 rounded-3 border-2" id="cardOnsite">
+                                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🏥</div>
+                                        <div class="fw-bolder">Sur place</div>
+                                        <div class="small text-muted mt-1">Cabinet du praticien</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        {# Online info banner #}
+                        <div id="onlineInfo" class="alert alert-info rounded-3 small d-flex gap-2 align-items-start mt-3 mb-0">
+                            <i class="bi bi-camera-video-fill flex-shrink-0 mt-1 text-info"></i>
+                            <span>Un lien <strong>Google Meet</strong> unique sera généré et envoyé par email aux deux parties.</span>
+                        </div>
+                        <div id="onsiteInfo" class="alert alert-secondary rounded-3 small d-flex gap-2 align-items-start mt-3 mb-0" style="display:none!important;">
+                            <i class="bi bi-geo-alt-fill flex-shrink-0 mt-1"></i>
+                            <span>Présentez-vous au cabinet du psychologue à l'heure convenue.</span>
+                        </div>
+                    </div>
+                </div>
+
                 {# ── Warning ── #}
                 <div class="alert alert-warning rounded-3 small d-flex gap-2 align-items-start mb-4">
                     <i class="bi bi-exclamation-triangle-fill flex-shrink-0 mt-1"></i>
@@ -74,13 +115,13 @@
 
                 {# ── Actions ── #}
                 <div class="d-flex gap-3">
-                    <a href="javascript:history.back()"
-                       class="btn btn-outline-secondary flex-fill py-3 fw-semibold">
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary flex-fill py-3 fw-semibold">
                         <i class="bi bi-x-lg me-1"></i>Annuler
                     </a>
                     <form method="POST"
                           action="{{ path('app_reservation_front_book', {'psychologueId': psychologue.id, 'slotDateTime': slotDateTime}) }}"
-                          class="flex-fill">
+                          class="flex-fill" id="bookingForm">
+                        <input type="hidden" name="session_type" id="sessionTypeInput" value="online">
                         <button type="submit" class="btn btn-primary w-100 py-3 fw-bolder">
                             <i class="bi bi-check-circle-fill me-2"></i>Confirmer la réservation
                         </button>
@@ -91,4 +132,43 @@
         </div>
     </div>
 </section>
+
+<style>
+.session-card-inner {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid #dee2e6 !important;
+    background: #f8f9fa;
+}
+.session-card-inner:hover {
+    border-color: #0d6efd !important;
+    background: #f0f7ff;
+}
+.session-card-inner.selected {
+    border-color: #0d6efd !important;
+    background: #e7f0ff;
+    box-shadow: 0 4px 16px rgba(13,110,253,0.15);
+}
+</style>
+
+<script>
+document.querySelectorAll('input[name="sessionType"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        document.getElementById('sessionTypeInput').value = this.value;
+
+        document.getElementById('cardOnline').classList.remove('selected');
+        document.getElementById('cardOnsite').classList.remove('selected');
+
+        if (this.value === 'online') {
+            document.getElementById('cardOnline').classList.add('selected');
+            document.getElementById('onlineInfo').style.display = 'flex';
+            document.getElementById('onsiteInfo').style.display = 'none';
+        } else {
+            document.getElementById('cardOnsite').classList.add('selected');
+            document.getElementById('onlineInfo').style.display = 'none';
+            document.getElementById('onsiteInfo').style.display = 'flex';
+        }
+    });
+});
+</script>
 {% endblock %}

@@ -196,104 +196,439 @@ final class ReservationFrontController extends AbstractController
 
         return new JsonResponse($response);
     }
-
-    /**
-     * Step 4: Confirm booking
-     */
+ 
     #[Route('/book/{psychologueId}/{slotDateTime}', name: 'app_reservation_front_book', methods: ['GET', 'POST'])]
-    public function book(int $psychologueId, string $slotDateTime, Request $request, EntityManagerInterface $em): Response
-    {
-        // Get psychologist
-        $psychologue = $em->getRepository(Users::class)->find($psychologueId);
-        if (!$psychologue) {
-            $this->addFlash('error', 'Psychologue non trouvé.');
+public function book(int $psychologueId, string $slotDateTime, Request $request, EntityManagerInterface $em): Response
+{
+    $psychologue = $em->getRepository(Users::class)->find($psychologueId);
+    if (!$psychologue) {
+        $this->addFlash('error', 'Psychologue non trouvé.');
+        return $this->redirectToRoute('app_reservation_front_index');
+    }
+
+    $dateParts = explode('-', $slotDateTime);
+    if (count($dateParts) !== 5) {
+        $this->addFlash('error', 'Créneau invalide.');
+        return $this->redirectToRoute('app_reservation_front_index');
+    }
+
+    try {
+        $slotTime = new \DateTime($dateParts[0] . '-' . $dateParts[1] . '-' . $dateParts[2] . ' ' . $dateParts[3] . ':' . $dateParts[4]);
+    } catch (\Exception $e) {
+        $this->addFlash('error', 'Créneau invalide.');
+        return $this->redirectToRoute('app_reservation_front_index');
+    }
+
+    /** @var Users $patient */
+    $patient = $this->getUser();
+    if (!$patient) {
+        return $this->redirectToRoute('app_login');
+    }
+
+    if ($request->isMethod('POST')) {
+        $existingDispo = $em->getRepository(Disponibilite::class)->findOneBy([
+            'psychologue' => $psychologue,
+            'dateHeure'   => $slotTime,
+            'isReserved'  => true,
+        ]);
+
+        if ($existingDispo) {
+            $this->addFlash('error', 'Ce créneau n\'est plus disponible.');
             return $this->redirectToRoute('app_reservation_front_index');
         }
 
-        // Parse the slot datetime (format: Y-m-d-H-i)
-        $dateParts = explode('-', $slotDateTime);
-        if (count($dateParts) !== 5) {
-            $this->addFlash('error', 'Créneau invalide.');
-            return $this->redirectToRoute('app_reservation_front_index');
-        }
+        $dispo = $em->getRepository(Disponibilite::class)->findOneBy([
+            'psychologue' => $psychologue,
+            'dateHeure'   => $slotTime,
+        ]);
 
-        try {
-            $slotTime = new \DateTime($dateParts[0] . '-' . $dateParts[1] . '-' . $dateParts[2] . ' ' . $dateParts[3] . ':' . $dateParts[4]);
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Créneau invalide.');
-            return $this->redirectToRoute('app_reservation_front_index');
-        }
-
-        // Get current logged-in user (patient)
-        /** @var Users $patient */
-        $patient = $this->getUser();
-        if (!$patient) {
-            return $this->redirectToRoute('app_login');
-        }
-
-        if ($request->isMethod('POST')) {
-            // Check if slot is already reserved
-            $existingDispo = $em->getRepository(Disponibilite::class)->findOneBy([
-                'psychologue' => $psychologue,
-                'dateHeure' => $slotTime,
-                'isReserved' => true
-            ]);
-
-            if ($existingDispo) {
-                $this->addFlash('error', 'Ce créneau n\'est plus disponible.');
+        if (!$dispo) {
+            $planning = $em->getRepository(Planning::class)->findOneBy(['psychologue' => $psychologue]);
+            if (!$planning) {
+                $this->addFlash('error', 'Planning non trouvé.');
                 return $this->redirectToRoute('app_reservation_front_index');
             }
-
-            // Create or update Disponibilite
-            $dispo = $em->getRepository(Disponibilite::class)->findOneBy([
-                'psychologue' => $psychologue,
-                'dateHeure' => $slotTime
-            ]);
-
-            if (!$dispo) {
-                // Create new Disponibilite
-                $planning = $em->getRepository(Planning::class)->findOneBy(['psychologue' => $psychologue]);
-                if (!$planning) {
-                    $this->addFlash('error', 'Planning non trouvé.');
-                    return $this->redirectToRoute('app_reservation_front_index');
-                }
-
-                $dispo = new Disponibilite();
-                $dispo->setPsychologue($psychologue);
-                $dispo->setPlanning($planning);
-                $dispo->setDateHeure($slotTime);
-            }
-
-            // Mark as reserved
-            $dispo->setIsReserved(true);
-            $em->persist($dispo);
-            $em->flush();
-
-            // Create reservation record
-            $reservation = new Reservation();
-            $reservation->setPatient($patient);
-            $reservation->setPsychologue($psychologue);
-            $reservation->setDatePrevue($slotTime);
-            $reservation->setDateDispo($slotTime);
-            $reservation->setStatus('en attente');
-            $em->persist($reservation);
-            $em->flush();
-
-            // Send confirmation email
-            $this->sendConfirmationEmail($patient, $psychologue, $slotTime);
-
-            $this->addFlash('success', 'Votre réservation a été confirmée ! Un email de confirmation vous a été envoyé.');
-            return $this->redirectToRoute('app_reservation_front_confirmation', ['id' => $reservation->getId()]);
+            $dispo = new Disponibilite();
+            $dispo->setPsychologue($psychologue);
+            $dispo->setPlanning($planning);
+            $dispo->setDateHeure($slotTime);
         }
 
-        // GET request - show confirmation form
-        return $this->render('reservation_front/book.html.twig', [
-            'psychologue' => $psychologue,
-            'slotDateTime' => $slotDateTime,
-            'slotTime' => $slotTime,
-            'patient' => $patient,
-        ]);
+        $dispo->setIsReserved(true);
+        $em->persist($dispo);
+        $em->flush();
+
+        $reservation = new Reservation();
+        $reservation->setPatient($patient);
+        $reservation->setPsychologue($psychologue);
+        $reservation->setDatePrevue($slotTime);
+        $reservation->setDateDispo($slotTime);
+        $reservation->setStatus('en attente');
+        $em->persist($reservation);
+        $em->flush();
+
+        // ── Session type & meeting link ──
+        $sessionType = $request->request->get('session_type', 'onsite');
+        $meetLink    = null;
+
+        if ($sessionType === 'online') {
+            $meetLink = $this->generateMeetLink($patient, $psychologue, $slotTime);
+        }
+
+        $this->sendConfirmationEmail($patient, $psychologue, $slotTime, $sessionType, $meetLink);
+
+        if ($meetLink) {
+            // Also notify the psychologist
+            $this->sendPsychologueEmail($patient, $psychologue, $slotTime, $meetLink);
+        }
+
+        $this->addFlash('success', 'Votre réservation a été confirmée ! Un email de confirmation vous a été envoyé.');
+        return $this->redirectToRoute('app_reservation_front_confirmation', ['id' => $reservation->getId()]);
     }
+
+    return $this->render('reservation_front/book.html.twig', [
+        'psychologue' => $psychologue,
+        'slotDateTime' => $slotDateTime,
+        'slotTime'    => $slotTime,
+        'patient'     => $patient,
+    ]);
+}
+
+ 
+
+ 
+    private function generateMeetLink(Users $patient, Users $psychologue, \DateTimeInterface $slotTime): string
+{
+    // Create unique room for each appointment
+    $roomName = sprintf(
+        'psydesk-%d-%d-%s',
+        $psychologue->getId(),
+        $patient->getId(),
+        $slotTime->format('Ymd-His')
+    );
+    return 'https://meet.jit.si/' . $roomName;
+}
+
+
+
+    private function sendConfirmationEmail(
+    Users $patient,
+    Users $psychologue,
+    \DateTimeInterface $dateHeure,
+    string $sessionType = 'onsite',
+    ?string $meetLink = null
+): void {
+    $dateFormatted  = $dateHeure->format('d/m/Y');
+    $heureFormatted = $dateHeure->format('H:i');
+    $patientNom     = $patient->getPrenom() . ' ' . $patient->getNom();
+    $psyNom         = 'Dr. ' . $psychologue->getPrenom() . ' ' . $psychologue->getNom();
+
+    $isOnline       = ($sessionType === 'online');
+    $sessionBadge   = $isOnline
+        ? "<span style='background:#e0f2fe;color:#0369a1;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:bold;'>💻 Séance en ligne</span>"
+        : "<span style='background:#f0fdf4;color:#166534;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:bold;'>🏥 Séance sur place</span>";
+
+    $meetSection = '';
+    if ($isOnline && $meetLink) {
+        $meetSection = "
+        <tr>
+            <td style='padding:24px 40px;'>
+                <table width='100%' cellpadding='0' cellspacing='0'
+                       style='background:linear-gradient(135deg,#1e40af,#1d4ed8);border-radius:12px;overflow:hidden;'>
+                    <tr>
+                        <td style='padding:28px 32px;text-align:center;'>
+                            <p style='margin:0 0 6px;color:#bfdbfe;font-size:12px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;'>
+                                🎥 Lien de votre séance en ligne
+                            </p>
+                            <p style='margin:0 0 18px;color:#ffffff;font-size:13px;'>
+                                Cliquez sur le bouton ci-dessous à l'heure de votre rendez-vous :
+                            </p>
+                            <a href='$meetLink'
+                               style='display:inline-block;background:#ffffff;color:#1e40af;
+                                      text-decoration:none;padding:14px 36px;border-radius:50px;
+                                      font-size:15px;font-weight:bold;letter-spacing:0.5px;'>
+                                🔗 Rejoindre la séance
+                            </a>
+                            <p style='margin:16px 0 0;color:#93c5fd;font-size:11px;word-break:break-all;'>
+                                $meetLink
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>";
+    } elseif (!$isOnline) {
+        $meetSection = "
+        <tr>
+            <td style='padding:0 40px 24px;'>
+                <table width='100%' cellpadding='0' cellspacing='0'
+                       style='background:#f0fdf4;border:2px solid #bbf7d0;border-radius:12px;'>
+                    <tr>
+                        <td style='padding:20px 24px;text-align:center;'>
+                            <p style='margin:0 0 6px;color:#166534;font-size:13px;font-weight:bold;'>
+                                🏥 Séance en présentiel
+                            </p>
+                            <p style='margin:0;color:#15803d;font-size:13px;'>
+                                Présentez-vous au cabinet du psychologue à l'heure convenue.
+                                Arrivez quelques minutes à l'avance.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>";
+    }
+
+    $htmlContent = "
+<!DOCTYPE html>
+<html lang='fr'>
+<head><meta charset='UTF-8'><title>Confirmation — PsyDesk</title></head>
+<body style='margin:0;padding:0;background-color:#f0f4f8;font-family:Georgia,serif;'>
+<table width='100%' cellpadding='0' cellspacing='0' style='background-color:#f0f4f8;padding:40px 20px;'>
+<tr><td align='center'>
+<table width='600' cellpadding='0' cellspacing='0'
+       style='background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.12);'>
+
+    <tr>
+        <td style='background:linear-gradient(135deg,#2d6a9f 0%,#1a4a7a 50%,#0d2d4f 100%);padding:48px 40px;text-align:center;'>
+            <div style='font-size:48px;margin-bottom:12px;'>🧠</div>
+            <h1 style='margin:0;color:#ffffff;font-size:28px;font-weight:normal;letter-spacing:3px;text-transform:uppercase;'>PsyDesk</h1>
+            <p style='margin:8px 0 0;color:#a8c8e8;font-size:13px;letter-spacing:2px;text-transform:uppercase;'>Plateforme de Santé Mentale</p>
+        </td>
+    </tr>
+
+    <tr>
+        <td style='background:linear-gradient(90deg,#27ae60,#2ecc71);padding:20px 40px;text-align:center;'>
+            <p style='margin:0;color:#ffffff;font-size:16px;font-weight:bold;letter-spacing:1px;'>✅ &nbsp; RÉSERVATION CONFIRMÉE</p>
+        </td>
+    </tr>
+
+    <tr>
+        <td style='padding:40px 40px 24px;text-align:center;'>
+            $sessionBadge
+        </td>
+    </tr>
+
+    <tr>
+        <td style='padding:0 40px 16px;'>
+            <h2 style='margin:0 0 12px;color:#1a2e44;font-size:22px;font-weight:normal;'>
+                Bonjour <strong style='color:#2d6a9f;'>$patientNom</strong>,
+            </h2>
+            <p style='margin:0;color:#4a5568;font-size:16px;line-height:1.8;'>
+                Votre séance a été réservée avec succès. Voici le récapitulatif :
+            </p>
+        </td>
+    </tr>
+
+    <tr>
+        <td style='padding:16px 40px;'>
+            <table width='100%' cellpadding='0' cellspacing='0'
+                   style='background:#f7faff;border:2px solid #e2ecf8;border-radius:12px;overflow:hidden;'>
+                <tr>
+                    <td style='padding:20px 24px;border-bottom:1px solid #e2ecf8;'>
+                        <p style='margin:0;font-size:11px;color:#718096;text-transform:uppercase;'>Psychologue</p>
+                        <p style='margin:4px 0 0;font-size:17px;color:#1a2e44;font-weight:bold;'>$psyNom</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style='padding:20px 24px;border-bottom:1px solid #e2ecf8;'>
+                        <p style='margin:0;font-size:11px;color:#718096;text-transform:uppercase;'>Date</p>
+                        <p style='margin:4px 0 0;font-size:17px;color:#1a2e44;font-weight:bold;'>$dateFormatted</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style='padding:20px 24px;'>
+                        <p style='margin:0;font-size:11px;color:#718096;text-transform:uppercase;'>Heure</p>
+                        <p style='margin:4px 0 0;font-size:17px;color:#1a2e44;font-weight:bold;'>$heureFormatted</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    $meetSection
+
+    <tr>
+        <td style='padding:16px 40px 32px;'>
+            <table width='100%' cellpadding='0' cellspacing='0'
+                   style='background:#fffbf0;border-left:4px solid #f6ad55;border-radius:0 8px 8px 0;'>
+                <tr>
+                    <td style='padding:18px 20px;'>
+                        <p style='margin:0 0 8px;font-size:12px;color:#744210;font-weight:bold;text-transform:uppercase;'>
+                            💡 Conseils avant votre séance
+                        </p>
+                        <ul style='margin:0;padding-left:18px;color:#5d4037;font-size:13px;line-height:2;'>
+                            <li>Arrivez / connectez-vous quelques minutes avant l'heure prévue</li>
+                            <li>Notez vos pensées et ressentis de la semaine</li>
+                            <li>Choisissez un endroit calme et privé</li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    <tr>
+        <td style='padding:0 40px 40px;text-align:center;'>
+            <a href='http://localhost:8000/reservation/front/mes-reservations'
+               style='display:inline-block;background:linear-gradient(135deg,#2d6a9f,#1a4a7a);color:#ffffff;
+                      text-decoration:none;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:bold;'>
+                📋 Voir mes réservations
+            </a>
+        </td>
+    </tr>
+
+    <tr>
+        <td style='background:#f7faff;padding:20px 40px;text-align:center;border-top:1px solid #e2ecf8;'>
+            <p style='margin:0;color:#718096;font-size:12px;line-height:1.8;'>
+                © 2026 PsyDesk — Plateforme de gestion pour psychologues et patients.
+            </p>
+        </td>
+    </tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>";
+
+    try {
+        $transport = Transport::fromDsn('smtp://tester44.tester2@gmail.com:hpevdqbvclzebhxa@smtp.gmail.com:587');
+        $mailer    = new Mailer($transport);
+        $email     = (new Email())
+            ->from('noreply@psydesk.com')
+            ->to($patient->getEmail())
+            ->subject('✅ Confirmation de votre rendez-vous — PsyDesk')
+            ->html($htmlContent);
+        $mailer->send($email);
+    } catch (\Exception $e) {
+        // silent fail
+    }
+}
+
+private function sendPsychologueEmail(
+    Users $patient,
+    Users $psychologue,
+    \DateTimeInterface $dateHeure,
+    string $meetLink
+): void {
+    $dateFormatted  = $dateHeure->format('d/m/Y');
+    $heureFormatted = $dateHeure->format('H:i');
+    $patientNom     = $patient->getPrenom() . ' ' . $patient->getNom();
+
+    $htmlContent = "
+<!DOCTYPE html>
+<html lang='fr'>
+<head><meta charset='UTF-8'><title>Nouveau rendez-vous — PsyDesk</title></head>
+<body style='margin:0;padding:0;background-color:#f0f4f8;font-family:Georgia,serif;'>
+<table width='100%' cellpadding='0' cellspacing='0' style='background-color:#f0f4f8;padding:40px 20px;'>
+<tr><td align='center'>
+<table width='600' cellpadding='0' cellspacing='0'
+       style='background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.12);'>
+
+    <tr>
+        <td style='background:linear-gradient(135deg,#2d6a9f 0%,#1a4a7a 50%,#0d2d4f 100%);padding:40px;text-align:center;'>
+            <h1 style='margin:0;color:#ffffff;font-size:26px;font-weight:normal;letter-spacing:3px;'>PsyDesk</h1>
+            <p style='margin:8px 0 0;color:#a8c8e8;font-size:13px;'>Plateforme de Santé Mentale</p>
+        </td>
+    </tr>
+
+    <tr>
+        <td style='background:linear-gradient(90deg,#7c3aed,#6d28d9);padding:18px 40px;text-align:center;'>
+            <p style='margin:0;color:#ffffff;font-size:15px;font-weight:bold;'>📅 &nbsp; NOUVEAU RENDEZ-VOUS EN LIGNE</p>
+        </td>
+    </tr>
+
+    <tr>
+        <td style='padding:40px 40px 24px;'>
+            <h2 style='margin:0 0 12px;color:#1a2e44;font-size:20px;'>
+                Bonjour <strong>Dr. {$psychologue->getPrenom()} {$psychologue->getNom()}</strong>,
+            </h2>
+            <p style='margin:0;color:#4a5568;font-size:15px;line-height:1.8;'>
+                Un patient a réservé une séance <strong>en ligne</strong> avec vous.
+            </p>
+        </td>
+    </tr>
+
+    <tr>
+        <td style='padding:0 40px 24px;'>
+            <table width='100%' cellpadding='0' cellspacing='0'
+                   style='background:#f7faff;border:2px solid #e2ecf8;border-radius:12px;'>
+                <tr>
+                    <td style='padding:18px 24px;border-bottom:1px solid #e2ecf8;'>
+                        <p style='margin:0;font-size:11px;color:#718096;text-transform:uppercase;'>Patient</p>
+                        <p style='margin:4px 0 0;font-size:16px;color:#1a2e44;font-weight:bold;'>$patientNom</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style='padding:18px 24px;border-bottom:1px solid #e2ecf8;'>
+                        <p style='margin:0;font-size:11px;color:#718096;text-transform:uppercase;'>Date</p>
+                        <p style='margin:4px 0 0;font-size:16px;color:#1a2e44;font-weight:bold;'>$dateFormatted</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style='padding:18px 24px;'>
+                        <p style='margin:0;font-size:11px;color:#718096;text-transform:uppercase;'>Heure</p>
+                        <p style='margin:4px 0 0;font-size:16px;color:#1a2e44;font-weight:bold;'>$heureFormatted</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    <tr>
+        <td style='padding:0 40px 32px;'>
+            <table width='100%' cellpadding='0' cellspacing='0'
+                   style='background:linear-gradient(135deg,#1e40af,#1d4ed8);border-radius:12px;'>
+                <tr>
+                    <td style='padding:28px 32px;text-align:center;'>
+                        <p style='margin:0 0 6px;color:#bfdbfe;font-size:12px;font-weight:bold;text-transform:uppercase;'>
+                            🎥 Lien de la séance
+                        </p>
+                        <p style='margin:0 0 18px;color:#ffffff;font-size:13px;'>
+                            Rejoignez la salle à l'heure convenue :
+                        </p>
+                        <a href='$meetLink'
+                           style='display:inline-block;background:#ffffff;color:#1e40af;
+                                  text-decoration:none;padding:14px 36px;border-radius:50px;
+                                  font-size:14px;font-weight:bold;'>
+                            🔗 Rejoindre la séance
+                        </a>
+                        <p style='margin:14px 0 0;color:#93c5fd;font-size:11px;word-break:break-all;'>$meetLink</p>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    <tr>
+        <td style='background:#f7faff;padding:20px 40px;text-align:center;border-top:1px solid #e2ecf8;'>
+            <p style='margin:0;color:#718096;font-size:12px;'>© 2026 PsyDesk</p>
+        </td>
+    </tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>";
+
+    try {
+        $transport = Transport::fromDsn('smtp://tester44.tester2@gmail.com:hpevdqbvclzebhxa@smtp.gmail.com:587');
+        $mailer    = new Mailer($transport);
+        $email     = (new Email())
+            ->from('noreply@psydesk.com')
+            ->to($psychologue->getEmail())
+            ->subject('📅 Nouveau rendez-vous en ligne — PsyDesk')
+            ->html($htmlContent);
+        $mailer->send($email);
+    } catch (\Exception $e) {
+        // silent fail
+    }
+}
+
+
+
 
     /**
      * Confirmation page
@@ -338,7 +673,7 @@ final class ReservationFrontController extends AbstractController
         ]);
     }
 
-    private function sendConfirmationEmail(Users $patient, Users $psychologue, \DateTimeInterface $dateHeure): void
+/*    private function sendConfirmationEmail(Users $patient, Users $psychologue, \DateTimeInterface $dateHeure): void
     {
         $dateFormatted = $dateHeure->format('d/m/Y');
         $heureFormatted = $dateHeure->format('H:i');
@@ -494,7 +829,7 @@ final class ReservationFrontController extends AbstractController
             // Log error but don't break the flow
             // $logger->error('Mail send failed: ' . $e->getMessage());
         }
-    }
+    }*/
 
     /**
      * Show user's reservations
