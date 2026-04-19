@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion|PsyDesk</title>
+    <title>Connexion | PsyDesk</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         /* ---------- STYLE AVEC FOND BLANC ---------- */
@@ -141,13 +141,64 @@
             opacity: 0.9;
         }
 
+        /* Style pour le bouton de connexion par visage - SANS BANDE BLEUE */
         .btn-face {
-            background: linear-gradient(135deg, #38b2ac, #319795);
-            margin-top: 5px;
+            background: transparent;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+            margin-top: 15px;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            text-decoration: none;
+        }
+
+        .btn-face i {
+            font-size: 18px;
+            color: #4a5568;
+            transition: all 0.3s ease;
         }
 
         .btn-face:hover {
-            background: linear-gradient(135deg, #319795, #2c7a7b);
+            background: #f7fafc;
+            border-color: #cbd5e0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-face:hover i {
+            color: #667eea;
+        }
+
+        /* Séparateur élégant */
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0 15px;
+            width: 100%;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .divider span {
+            padding: 0 10px;
+            color: #a0aec0;
+            font-size: 12px;
+            font-weight: 500;
         }
 
         a {
@@ -286,6 +337,23 @@
             color: #155724;
         }
 
+        /* Animation pour le bouton visage */
+        @keyframes subtlePulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .btn-face:active {
+            animation: subtlePulse 0.3s ease;
+        }
+
         @media (max-width: 768px) {
             .form-container, .toggle-container {
                 width: 100%;
@@ -327,9 +395,15 @@
             
             <button type="submit">Se connecter</button>
             
-            <!--  BOUTON CONNEXION PAR VISAGE AJOUTÉ -->
-            <a href="{{ path('app_login_face') }}" class="btn-face" style="text-decoration: none; text-align: center; display: block;">
-                <i class="fa-solid fa-camera"></i> Se connecter avec mon visage
+            <!-- Séparateur élégant -->
+            <div class="divider">
+                <span>ou</span>
+            </div>
+            
+            <!-- BOUTON CONNEXION PAR VISAGE - STYLE CLAIR SANS BANDE BLEUE -->
+            <a href="{{ path('app_login_face') }}" class="btn-face">
+                <i class="fa-solid fa-camera"></i> 
+                Se connecter avec mon visage
             </a>
             
             <a href="{{ path('app_reset_password') }}">Mot de passe oublié ?</a>

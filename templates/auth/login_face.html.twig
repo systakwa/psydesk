@@ -5,103 +5,566 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion par visage | PSYDESK</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
         .face-card {
             background: white;
-            border-radius: 20px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
             padding: 40px;
-            max-width: 500px;
+            max-width: 550px;
             width: 100%;
             text-align: center;
+            animation: fadeInUp 0.6s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .video-container {
+            position: relative;
+            margin: 25px 0;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #f1f5f9;
+            min-height: 320px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
         }
         video {
             width: 100%;
-            border-radius: 15px;
-            margin: 20px 0;
-            border: 3px solid #667eea;
+            border-radius: 20px;
+            background: #f1f5f9;
+            transform: scaleX(-1);
+        }
+        .video-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+        .video-placeholder i {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .video-placeholder:hover {
+            background: #f1f5f9;
+        }
+        .face-guide {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 2px dashed #667eea;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 3;
+        }
+        .face-guide.active {
+            opacity: 0.6;
         }
         .btn-face {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-weight: bold;
+            padding: 14px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-face:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102,126,234,0.3);
+        }
+        .btn-face:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid #e2e8f0;
+            color: #4a5568;
+            margin-top: 15px;
+        }
+        .btn-secondary:hover {
+            background: #f7fafc;
+            border-color: #cbd5e0;
         }
         .status {
+            margin: 20px 0;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+        .status.loading {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .status.info {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
             margin: 15px 0;
-            padding: 10px;
-            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .instruction {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 15px;
+        }
+        h2 {
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .countdown {
+            font-size: 48px;
+            font-weight: bold;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            z-index: 10;
+            font-family: monospace;
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .detection-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
         }
     </style>
 </head>
 <body>
     <div class="face-card">
+        <i class="ri-camera-line" style="font-size: 48px; color: #667eea;"></i>
         <h2> Connexion par visage</h2>
-        <video id="video" autoplay muted playsinline></video>
-        <canvas id="canvas" style="display: none;"></canvas>
-        <div id="status" class="status"></div>
-        <button id="loginBtn" class="btn-face">Se connecter</button>
+        <p class="subtitle">Regardez la caméra pour vous identifier</p>
+        
+        <div class="video-container" id="videoContainer">
+            <div class="video-placeholder" id="videoPlaceholder">
+                <i class="ri-camera-line"></i>
+                <span>Cliquez pour activer la caméra</span>
+                <small style="margin-top: 10px;"> Nous ne stockons pas vos images</small>
+            </div>
+            <video id="video" autoplay muted playsinline style="display: none;"></video>
+            <canvas id="detectionCanvas" class="detection-canvas"></canvas>
+            <div class="face-guide" id="faceGuide"></div>
+            <div id="countdown" class="countdown" style="display: none;"></div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div id="status" class="status info">
+            <i class="ri-information-line"></i>
+            <span id="statusText">Activez la caméra pour commencer</span>
+        </div>
+        
+        <button id="loginBtn" class="btn-face" disabled>
+            <i class="ri-camera-line"></i> Scanner mon visage
+        </button>
+        
+        <button id="retryBtn" class="btn-face btn-secondary" style="display: none;">
+            <i class="ri-refresh-line"></i> Réessayer
+        </button>
+        
         <div class="mt-3">
-            <a href="{{ path('app_login') }}">← Connexion classique</a>
+            <a href="{{ path('app_login') }}" style="color: #667eea; text-decoration: none;">
+                <i class="ri-arrow-left-line"></i> Retour à la connexion classique
+            </a>
+        </div>
+        
+        <div class="instruction">
+             Placez votre visage dans le cercle, regardez droit devant vous<br>
+             La détection s'active automatiquement
         </div>
     </div>
     
     <script>
+        // Éléments DOM
+        const videoContainer = document.getElementById('videoContainer');
+        const videoPlaceholder = document.getElementById('videoPlaceholder');
         const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
+        const detectionCanvas = document.getElementById('detectionCanvas');
+        const faceGuide = document.getElementById('faceGuide');
         const statusDiv = document.getElementById('status');
-        let stream = null;
+        const statusText = document.getElementById('statusText');
+        const loginBtn = document.getElementById('loginBtn');
+        const retryBtn = document.getElementById('retryBtn');
+        const progressBar = document.getElementById('progressBar');
+        const countdownDiv = document.getElementById('countdown');
         
+        let stream = null;
+        let isCameraActive = false;
+        let isScanning = false;
+        let animationId = null;
+        let faceDetected = false;
+        
+        // Configuration
+        const SCAN_DURATION = 3000;
+        
+        // Démarrer la caméra
         async function startCamera() {
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                updateStatus(' Demande d\'accès à la caméra...', 'loading');
+                
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: { ideal: 640 },
+                        height: { ideal: 480 },
+                        facingMode: 'user'
+                    } 
+                });
+                
                 video.srcObject = stream;
-                statusDiv.innerHTML = ' Caméra active';
-                statusDiv.style.background = '#d1fae5';
+                video.style.display = 'block';
+                videoPlaceholder.style.display = 'none';
+                
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        resolve();
+                    };
+                });
+                
+                // Configurer le canvas
+                detectionCanvas.width = video.videoWidth;
+                detectionCanvas.height = video.videoHeight;
+                detectionCanvas.style.width = '100%';
+                detectionCanvas.style.height = '100%';
+                
+                isCameraActive = true;
+                faceGuide.classList.add('active');
+                updateStatus(' Caméra active. Positionnez votre visage dans le cercle.', 'success');
+                loginBtn.disabled = false;
+                
+                // Démarrer la détection de visage
+                startFaceDetection();
+                
             } catch (error) {
-                statusDiv.innerHTML = ' Caméra inaccessible';
-                statusDiv.style.background = '#fee2e2';
+                console.error('Erreur caméra:', error);
+                updateStatus(' Impossible d\'accéder à la caméra. Vérifiez les permissions.', 'error');
+                loginBtn.disabled = true;
             }
         }
         
-        async function loginWithFace() {
-            statusDiv.innerHTML = ' Analyse...';
-            
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            
-            canvas.toBlob(async (blob) => {
-                const formData = new FormData();
-                formData.append('image', blob, 'face.jpg');
-                
-                const response = await fetch('/face/login', { method: 'POST', body: formData });
-                const result = await response.json();
-                
-                if (result.success) {
-                    statusDiv.innerHTML =  Connexion réussie !';
-                    window.location.href = result.redirect;
-                } else {
-                    statusDiv.innerHTML = ' ' + result.message;
-                    statusDiv.style.background = '#fee2e2';
-                }
-            }, 'image/jpeg');
+        // Détection de visage avec analyse de couleur (fallback si face-api non dispo)
+        function startFaceDetection() {
+            detectMotion();
         }
         
-        startCamera();
-        document.getElementById('loginBtn').addEventListener('click', loginWithFace);
+        // Détection de mouvement/changement dans le cadre central
+        let previousFrame = null;
+        let stableFrameCount = 0;
         
+        function detectMotion() {
+            if (!isCameraActive || !video.videoWidth) {
+                animationId = requestAnimationFrame(detectMotion);
+                return;
+            }
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Analyser la zone centrale (où devrait être le visage)
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const boxSize = Math.min(canvas.width, canvas.height) * 0.4;
+            const startX = centerX - boxSize / 2;
+            const startY = centerY - boxSize / 2;
+            
+            try {
+                const imageData = ctx.getImageData(startX, startY, boxSize, boxSize);
+                const pixels = imageData.data;
+                
+                // Calculer la variance des couleurs (indicateur de présence de visage)
+                let sum = 0;
+                for (let i = 0; i < pixels.length; i += 4) {
+                    const brightness = (pixels[i] + pixels[i+1] + pixels[i+2]) / 3;
+                    sum += brightness;
+                }
+                const avgBrightness = sum / (pixels.length / 4);
+                
+                // Calculer l'écart type
+                let variance = 0;
+                for (let i = 0; i < pixels.length; i += 4) {
+                    const brightness = (pixels[i] + pixels[i+1] + pixels[i+2]) / 3;
+                    variance += Math.pow(brightness - avgBrightness, 2);
+                }
+                variance = variance / (pixels.length / 4);
+                
+                // Un visage a généralement une variance modérée
+                const hasFace = variance > 300 && variance < 3000 && avgBrightness > 50 && avgBrightness < 200;
+                
+                // Dessiner le cadre sur le canvas de détection
+                const detectionCtx = detectionCanvas.getContext('2d');
+                detectionCtx.clearRect(0, 0, detectionCanvas.width, detectionCanvas.height);
+                
+                if (hasFace) {
+                    detectionCtx.strokeStyle = '#10b981';
+                    detectionCtx.lineWidth = 3;
+                    detectionCtx.strokeRect(startX, startY, boxSize, boxSize);
+                    
+                    if (!faceDetected) {
+                        faceDetected = true;
+                        updateStatus(' Visage détecté ! Prêt pour la reconnaissance', 'success');
+                        faceGuide.style.borderColor = '#10b981';
+                    }
+                    
+                    stableFrameCount++;
+                } else {
+                    if (faceDetected) {
+                        faceDetected = false;
+                        updateStatus(' Aucun visage détecté dans le cadre', 'info');
+                        faceGuide.style.borderColor = '#667eea';
+                    }
+                    stableFrameCount = 0;
+                }
+            } catch (e) {
+                // Ignorer les erreurs
+            }
+            
+            animationId = requestAnimationFrame(detectMotion);
+        }
+        
+        // Scanner le visage
+        async function scanFace() {
+            if (isScanning) return;
+            
+            if (!faceDetected) {
+                updateStatus(' Aucun visage détecté. Placez votre visage dans le cercle.', 'error');
+                return;
+            }
+            
+            isScanning = true;
+            loginBtn.disabled = true;
+            retryBtn.style.display = 'none';
+            
+            // Animation de progression
+            progressBar.style.width = '0%';
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += (100 / (SCAN_DURATION / 100));
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(progressInterval);
+                }
+                progressBar.style.width = progress + '%';
+            }, 100);
+            
+            // Afficher le compte à rebours
+            let countdown = 3;
+            countdownDiv.style.display = 'flex';
+            countdownDiv.textContent = countdown;
+            
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    countdownDiv.textContent = countdown;
+                } else {
+                    clearInterval(countdownInterval);
+                    countdownDiv.style.display = 'none';
+                }
+            }, 1000);
+            
+            updateStatus(' Préparation de la capture...', 'loading');
+            
+            // Attendre pour la capture
+            setTimeout(async () => {
+                try {
+                    // Créer un canvas pour capturer l'image
+                    const captureCanvas = document.createElement('canvas');
+                    captureCanvas.width = video.videoWidth;
+                    captureCanvas.height = video.videoHeight;
+                    const context = captureCanvas.getContext('2d');
+                    context.drawImage(video, 0, 0, captureCanvas.width, captureCanvas.height);
+                    
+                    updateStatus(' Envoi au serveur pour reconnaissance...', 'loading');
+                    
+                    // Convertir en blob et envoyer
+                    const blob = await new Promise(resolve => captureCanvas.toBlob(resolve, 'image/jpeg', 0.9));
+                    const formData = new FormData();
+                    formData.append('image', blob, 'face_' + Date.now() + '.jpg');
+                    
+                    const response = await fetch('{{ path('face_login') }}', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    clearInterval(progressInterval);
+                    clearInterval(countdownInterval);
+                    countdownDiv.style.display = 'none';
+                    
+                    if (result.success) {
+                        updateStatus(' Reconnaissance réussie ! Redirection...', 'success');
+                        progressBar.style.width = '100%';
+                        
+                        setTimeout(() => {
+                            window.location.href = result.redirect;
+                        }, 1000);
+                    } else {
+                        updateStatus(' ' + (result.message || 'Visage non reconnu. Veuillez réessayer.'), 'error');
+                        progressBar.style.width = '0%';
+                        loginBtn.disabled = false;
+                        retryBtn.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    updateStatus(' Erreur de connexion au serveur', 'error');
+                    progressBar.style.width = '0%';
+                    loginBtn.disabled = false;
+                    retryBtn.style.display = 'block';
+                } finally {
+                    isScanning = false;
+                }
+            }, 2000);
+        }
+        
+        // Réessayer
+        function retryScan() {
+            retryBtn.style.display = 'none';
+            loginBtn.disabled = false;
+            progressBar.style.width = '0%';
+            faceDetected = false;
+            updateStatus(' Prêt pour un nouveau scan', 'success');
+        }
+        
+        // Arrêter la caméra
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            isCameraActive = false;
+            video.style.display = 'none';
+            videoPlaceholder.style.display = 'flex';
+            faceGuide.classList.remove('active');
+        }
+        
+        function updateStatus(message, type) {
+            statusText.textContent = message;
+            statusDiv.className = `status ${type}`;
+            
+            const icon = statusDiv.querySelector('i');
+            if (icon) {
+                if (type === 'loading') icon.className = 'ri-loader-4-line';
+                else if (type === 'success') icon.className = 'ri-checkbox-circle-line';
+                else if (type === 'error') icon.className = 'ri-error-warning-line';
+                else icon.className = 'ri-information-line';
+            }
+        }
+        
+        // Événements
+        videoPlaceholder.addEventListener('click', startCamera);
+        loginBtn.addEventListener('click', scanFace);
+        retryBtn.addEventListener('click', retryScan);
+        
+        // Nettoyage en quittant
         window.addEventListener('beforeunload', () => {
-            if (stream) stream.getTracks().forEach(track => track.stop());
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
         });
+        
+        // Démarrer automatiquement ? (optionnel)
+        // startCamera();
     </script>
 </body>
 </html>
