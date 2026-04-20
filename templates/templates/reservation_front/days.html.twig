@@ -1,0 +1,132 @@
+{% extends 'base_front.html.twig' %}
+{% block title %}Choisir un jour — Dr. {{ psychologue.prenom }} {{ psychologue.nom }} — PsyDesk{% endblock %}
+
+{% block extra_styles %}
+.date-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    padding: 20px 10px;
+    text-align: center;
+    text-decoration: none;
+    color: #212529;
+    background: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all .18s ease;
+    min-height: 100px;
+}
+.date-btn:hover {
+    border-color: #0d6efd;
+    background: #e7f0ff;
+    color: #0d6efd;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(13,110,253,.15);
+    text-decoration: none;
+}
+.date-btn .date-day {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0d6efd;
+}
+.date-btn .date-label {
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-top: 5px;
+}
+.date-btn:hover .date-day { color: #0d6efd; }
+.date-btn:hover .date-label { color: #0d6efd; }
+{% endblock %}
+
+{% block page_hero %}
+<section class="py-4 bg-white border-bottom">
+    <div class="container px-5">
+        <a href="{{ path('app_reservation_front_dates', {'id': psychologue.id}) }}"
+           class="btn btn-sm btn-outline-secondary mb-3">
+            <i class="bi bi-arrow-left me-1"></i>Retour aux mois
+        </a>
+        <div class="d-flex align-items-center gap-4">
+            <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#0d6efd,#6610f2);
+                        display:flex;align-items:center;justify-content:center;
+                        font-size:22px;font-weight:700;color:#fff;flex-shrink:0;">
+                {{ psychologue.prenom|first|upper }}{{ psychologue.nom|first|upper }}
+            </div>
+            <div>
+                <h1 class="h3 fw-bolder mb-0">Dr. {{ psychologue.prenom }} {{ psychologue.nom }}</h1>
+                <p class="text-muted small mb-0">
+                    <i class="bi bi-calendar3 me-1"></i>{{ monthLabel }}
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block body %}
+<section class="py-5">
+    <div class="container px-5">
+
+        {% if availableDays|length == 0 %}
+            <div class="card border-0 shadow rounded-4 text-center py-5">
+                <div class="card-body">
+                    <div class="display-1 mb-3">📅</div>
+                    <h4 class="fw-bolder">Aucun jour disponible</h4>
+                    <p class="text-muted">Le psychologue n'a pas de disponibilités en {{ monthLabel }}.</p>
+                    <a href="{{ path('app_reservation_front_dates', {'id': psychologue.id}) }}" class="btn btn-primary mt-2">
+                        <i class="bi bi-arrow-left me-1"></i>Choisir un autre mois
+                    </a>
+                </div>
+            </div>
+
+        {% else %}
+            <div class="mb-4">
+                <h5 class="fw-semibold mb-3">
+                    <i class="bi bi-calendar-date me-2 text-primary"></i>Jours disponibles en {{ monthLabel }}
+                </h5>
+            </div>
+
+            <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3">
+                {% for dayNum in availableDays %}
+                    {% set dateStr = year ~ '-' ~ (month < 10 ? '0' : '') ~ month ~ '-' ~ (dayNum < 10 ? '0' : '') ~ dayNum %}
+                    <div class="col">
+                        <a href="{{ path('app_reservation_front_slots', {'id': psychologue.id, 'dateSelected': dateStr}) }}"
+                           class="date-btn">
+                            <div class="date-day">{{ dayNum }}</div>
+                            <div class="date-label">
+                                {{ dateStr|date('D')|slice(0, 3)|upper }}
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="alert alert-info mt-5 rounded-3 d-flex gap-2 align-items-start">
+                <i class="bi bi-info-circle-fill flex-shrink-0 mt-1"></i>
+                <span class="small">
+                    <strong>{{ availableDays|length }} jour(s) disponible(s)</strong>
+                    pour prendre rendez-vous en {{ monthLabel }}.
+                </span>
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}
+
+{% block cta_section %}
+<section class="py-5 bg-gradient-primary-to-secondary text-white">
+    <div class="container px-5 text-center">
+        <h2 class="display-6 fw-bolder mb-3">Déjà réservé une séance ?</h2>
+        <a class="btn btn-outline-light btn-lg px-5 py-3 fs-6 fw-bolder"
+           href="{{ path('app_reservation_front_my_reservations') }}">
+            <i class="bi bi-list-check me-2"></i>Voir mes réservations
+        </a>
+    </div>
+</section>
+{% endblock %}

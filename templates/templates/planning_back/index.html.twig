@@ -1,0 +1,90 @@
+{% extends 'base1.html.twig' %}
+
+{% block title %}PsyDesk Admin - Plannings{% endblock %}
+
+{% block page_title %}Gestion des plannings{% endblock %}
+{% block page_subtitle %}Consultez et gérez tous les plannings des psychologues.{% endblock %}
+
+{% block page_header_action %}
+    <a href="{{ path('app_planning_back_new') }}" class="btn btn-sm btn-primary">
+        + Nouveau planning
+    </a>
+{% endblock %}
+
+{% block body %}
+    <h4 class="card-title">Liste des plannings</h4>
+
+    <!-- Search Bar -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="POST" id="searchForm">
+                <input type="text" id="planningSearch" name="search" class="form-control" placeholder="Rechercher par psychologue, jour..." value="{{ search }}">
+            </form>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table table-sm table-hover">
+            <thead>
+                <tr>
+                    <th>Psychologue</th>
+                    <th>Jour</th>
+                    <th>Heure début</th>
+                    <th>Heure fin</th>
+                    <th>Pause début</th>
+                    <th>Pause fin</th>
+                    <th>Durée (min)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="planningList">
+                {% for planning in plannings %}
+                <tr class="planning-row">
+                    <td>
+                        <div style="font-weight: 600;">Dr. {{ planning.psychologue.prenom }} {{ planning.psychologue.nom }}</div>
+                        <small class="text-muted">{{ planning.psychologue.email }}</small>
+                    </td>
+                    <td>{{ planning.jour }}</td>
+                    <td>{{ planning.heureDebut ? planning.heureDebut|date('H:i') : '—' }}</td>
+                    <td>{{ planning.heureFin ? planning.heureFin|date('H:i') : '—' }}</td>
+                    <td>{{ planning.pauseDebut ? planning.pauseDebut|date('H:i') : '—' }}</td>
+                    <td>{{ planning.pauseFin ? planning.pauseFin|date('H:i') : '—' }}</td>
+                    <td>{{ planning.duree }}</td>
+                    <td>
+                        <a href="{{ path('app_planning_back_show', {'id': planning.id}) }}"
+                           class="btn btn-sm btn-outline-info">
+                            <i class="bi bi-eye"></i> Voir
+                        </a>
+                        <a href="{{ path('app_planning_back_edit', {'id': planning.id}) }}"
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i> Modifier
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">Aucun planning trouvé.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-4">
+        {{ knp_pagination_render(plannings) }}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        $("#planningSearch").on("keyup", function() {
+            var searchQuery = $(this).val().toLowerCase();
+            $(".planning-row").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(searchQuery) > -1);
+            });
+        });
+    });
+    </script>
+{% endblock %}

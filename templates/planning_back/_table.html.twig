@@ -1,0 +1,51 @@
+<div class="table-responsive">
+    <table class="table table-sm table-hover">
+        <thead>
+            <tr>
+                <th>Psychologue</th>
+                <th>Jour</th>
+                <th>Heure début</th>
+                <th>Heure fin</th>
+                <th>Pause début</th>
+                <th>Pause fin</th>
+                <th>Durée (min)</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for planning in plannings %}
+            <tr>
+                <td>
+                    <div style="font-weight: 600;">Dr. {{ planning.psychologue.prenom }} {{ planning.psychologue.nom }}</div>
+                    <small class="text-muted">{{ planning.psychologue.email }}</small>
+                </td>
+                <td>{{ planning.jour }}</td>
+                <td>{{ planning.heureDebut ? planning.heureDebut|date('H:i') : '—' }}</td>
+                <td>{{ planning.heureFin ? planning.heureFin|date('H:i') : '—' }}</td>
+                <td>{{ planning.pauseDebut ? planning.pauseDebut|date('H:i') : '—' }}</td>
+                <td>{{ planning.pauseFin ? planning.pauseFin|date('H:i') : '—' }}</td>
+                <td>{{ planning.duree }}</td>
+                <td>
+                    <a href="{{ path('app_planning_back_show', {'id': planning.id}) }}"
+                       class="btn btn-sm btn-outline-info">
+                        <i class="bi bi-eye"></i> Voir
+                    </a>
+                    <a href="{{ path('app_planning_back_edit', {'id': planning.id}) }}"
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil"></i> Modifier
+                    </a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="text-center text-muted py-4">Aucun planning trouvé.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+<div class="mt-4">
+    {{ knp_pagination_render(plannings) }}
+</div>

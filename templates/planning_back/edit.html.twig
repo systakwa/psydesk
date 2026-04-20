@@ -1,0 +1,38 @@
+{% extends 'base1.html.twig' %}
+
+{% block title %}PsyDesk Admin - Modifier planning{% endblock %}
+
+{% block page_title %}Modifier le planning{% endblock %}
+{% block page_subtitle %}Modification du planning n°{{ planning.id }}{% endblock %}
+
+{% block page_header_action %}
+    <div class="d-flex gap-2">
+        <a href="{{ path('app_planning_back_index') }}" class="btn btn-sm btn-secondary">
+            ← Retour à la liste
+        </a>
+        <a href="{{ path('app_planning_back_show', {'id': planning.id}) }}" class="btn btn-sm btn-outline-info">
+            Voir
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title mb-4">Modifier le planning</h4>
+                    
+                    {{ include('planning_back/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+                    
+                    <hr class="my-4">
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Actions dangereuses</span>
+                        {{ include('planning_back/_delete_form.html.twig') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

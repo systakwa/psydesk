@@ -1,0 +1,66 @@
+{% extends 'base1.html.twig' %}
+
+{% block title %}PsyDesk Admin - Détail planning{% endblock %}
+
+{% block page_title %}Détail du planning{% endblock %}
+{% block page_subtitle %}Informations complètes du planning{% endblock %}
+
+{% block page_header_action %}
+    <div class="d-flex gap-2">
+        <a href="{{ path('app_planning_back_index') }}" class="btn btn-sm btn-secondary">
+            ← Retour
+        </a>
+        <a href="{{ path('app_planning_back_edit', {'id': planning.id}) }}" class="btn btn-sm btn-primary">
+            Modifier
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <div class="info-section">
+                        <h5 class="mb-3 text-white">Informations générales</h5>
+                        <div class="bg-dark p-3 rounded mb-4 border-1" style="border: 1px solid #495057;">
+                            <p class="mb-0 text-light"><strong>📅 Jour :</strong> <span style="color: #0d6efd;">{{ planning.jour }}</span></p>
+                        </div>
+
+                        <h5 class="mb-3 text-white">Horaires de travail</h5>
+                        <div class="bg-dark p-3 rounded mb-4 border-1" style="border: 1px solid #495057;">
+                            <p class="mb-2 text-light">
+                                <strong>🕐 Heure de début :</strong>
+                                <span style="color: #28a745;">{{ planning.heureDebut ? planning.heureDebut|date('H:i') : 'Non définie' }}</span>
+                            </p>
+                            <p class="mb-2 text-light">
+                                <strong>🕛 Heure de fin :</strong>
+                                <span style="color: #dc3545;">{{ planning.heureFin ? planning.heureFin|date('H:i') : 'Non définie' }}</span>
+                            </p>
+                            <p class="mb-0 text-light">
+                                <strong>⏱️ Durée des consultations :</strong> <span style="color: #ffc107;">{{ planning.duree }} minutes</span>
+                            </p>
+                        </div>
+
+                        <h5 class="mb-3 text-white">Pause</h5>
+                        <div class="bg-dark p-3 rounded mb-4 border-1" style="border: 1px solid #495057;">
+                            <p class="mb-2 text-light">
+                                <strong>☕ Début de pause :</strong>
+                                <span style="color: #17a2b8;">{{ planning.pauseDebut ? planning.pauseDebut|date('H:i') : 'Non définie' }}</span>
+                            </p>
+                            <p class="mb-0 text-light">
+                                <strong>🔚 Fin de pause :</strong>
+                                <span style="color: #17a2b8;">{{ planning.pauseFin ? planning.pauseFin|date('H:i') : 'Non définie' }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-4 border-1" style="border: 1px solid #0d6efd; background-color: rgba(13, 110, 253, 0.1); color: #0d6efd;">
+                        <i class="mdi mdi-information-outline"></i>
+                        Pour modifier ce planning, cliquez sur le bouton "Modifier" ci-dessus.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

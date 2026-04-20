@@ -1,0 +1,192 @@
+{{ form_start(form, {'attr': {'class': 'form-dark'}}) }}
+    <style>
+        .form-dark .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-dark .form-control,
+        .form-dark select,
+        .form-dark textarea {
+            background-color: #212529;
+            color: #ffffff;
+            border-color: #495057;
+            padding: 0.75rem 0.875rem;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            min-height: 120px;
+        }
+        .form-dark .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 16px;
+            background-color: #212529;
+            color: #ffffff;
+            border-color: #495057;
+            appearance: none;
+            padding-right: 2.5rem;
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+            min-height: auto;
+        }
+        .form-dark .form-select:focus {
+            background-color: #212529;
+            color: #ffffff;
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        .form-dark .form-select option {
+            background-color: #343a40;
+            color: #ffffff;
+            padding: 0.75rem;
+            margin: 0.25rem 0;
+            border-radius: 0.375rem;
+        }
+        .form-dark .form-select option:checked {
+            background: linear-gradient(#0d6efd, #0d6efd);
+            background-color: #0d6efd !important;
+            color: #ffffff;
+        }
+        .form-dark .form-select option:hover {
+            background-color: #495057;
+        }
+        .form-dark .form-control:focus,
+        .form-dark select:focus,
+        .form-dark textarea:focus {
+            background-color: #212529;
+            color: #ffffff;
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        .form-dark label {
+            color: #e9ecef;
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+            display: block;
+        }
+        .form-dark input[type="datetime-local"],
+        .form-dark input[type="date"],
+        .form-dark input[type="time"],
+        .form-dark input[type="number"] {
+            background-color: #212529;
+            color: #ffffff;
+            border-color: #495057;
+            min-height: auto;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #0d6efd, #0099ff);
+            border: none;
+            color: white;
+            padding: 0.875rem 1.75rem;
+            font-weight: 600;
+            border-radius: 0.375rem;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+        }
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #0099ff, #0d6efd);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+            color: white;
+        }
+        .alert-danger {
+            color: #f8d7da;
+        }
+    </style>
+
+    {% set form_errors = form.vars.errors %}
+    {% if form_errors|length > 0 %}
+        <div class="alert alert-danger mb-3 border-0 rounded">
+            <strong>Erreurs :</strong>
+            {{ form_errors(form) }}
+        </div>
+    {% endif %}
+
+    <div class="form-group mb-3">
+        {{ form_label(form.patient, 'Patient', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.patient, {'attr': {'class': 'form-control form-select'}}) }}
+        {{ form_errors(form.patient) }}
+    </div>
+
+    <div class="form-group mb-3">
+        {{ form_label(form.psychologue, 'Psychologue', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.psychologue, {'attr': {'class': 'form-control form-select'}}) }}
+        {{ form_errors(form.psychologue) }}
+    </div>
+
+    <div class="form-group mb-3">
+        {{ form_label(form.reservation, 'Réservation', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.reservation, {'attr': {'class': 'form-control form-select'}}) }}
+        {{ form_errors(form.reservation) }}
+    </div>
+
+    <div class="form-group mb-3">
+        {{ form_label(form.texteFiche, 'Contenu de la fiche', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.texteFiche, {'attr': {'class': 'form-control', 'rows': 8}}) }}
+        {{ form_errors(form.texteFiche) }}
+    </div>
+
+    <div class="form-group mb-4">
+        {{ form_label(form.date, 'Date de création', {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.date, {'attr': {'class': 'form-control', 'type': 'datetime-local'}}) }}
+        {{ form_errors(form.date) }}
+    </div>
+
+    <div class="d-flex gap-2 pt-3">
+        <button class="btn btn-submit" type="submit">
+            <i class="bi bi-check-circle me-2"></i>{{ button_label|default('Enregistrer') }}
+        </button>
+        <a href="{{ path('app_fiche_back_index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-x-circle me-2"></i>Annuler
+        </a>
+    </div>
+{{ form_end(form) }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Find all select elements and identify reservation and patient
+    const allSelects = document.querySelectorAll('select');
+    let reservationSelect = null;
+    let patientSelect = null;
+
+    allSelects.forEach(select => {
+        const name = select.name || select.id || '';
+        if (name.includes('reservation')) {
+            reservationSelect = select;
+        }
+        if (name.includes('patient')) {
+            patientSelect = select;
+        }
+    });
+
+    if (reservationSelect && patientSelect) {
+        console.log('Found reservation and patient selects');
+
+        // Listen to reservation field changes
+        reservationSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const patientId = selectedOption.getAttribute('data-patient-id');
+
+            console.log('Reservation changed, patient ID:', patientId);
+
+            if (patientId) {
+                // Set the patient select to the patient ID from the reservation
+                patientSelect.value = patientId;
+                // Trigger change event for any listeners
+                patientSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+
+        // Optionally, auto-select patient if reservation is already selected on page load
+        if (reservationSelect.value) {
+            const selectedOption = reservationSelect.options[reservationSelect.selectedIndex];
+            const patientId = selectedOption.getAttribute('data-patient-id');
+            if (patientId) {
+                console.log('Pre-selected reservation, setting patient to:', patientId);
+                patientSelect.value = patientId;
+            }
+        }
+    } else {
+        console.log('Could not find reservation or patient selects');
+    }
+});
+</script>

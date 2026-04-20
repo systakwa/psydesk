@@ -1,0 +1,58 @@
+{% extends 'base1.html.twig' %}
+
+{% block title %}PsyDesk Admin - Modifier la réservation{% endblock %}
+
+{% block page_title %}Modifier une réservation{% endblock %}
+{% block page_subtitle %}Modifiez les informations de la réservation n°{{ reservation.id }}{% endblock %}
+
+{% block page_header_action %}
+    <a href="{{ path('app_reservation_back_index') }}" class="btn btn-sm btn-secondary">
+        ← Retour à la liste
+    </a>
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <h4 class="card-title mb-4 text-white">Informations de la réservation</h4>
+
+                    {# Patient & Psychologist Info #}
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="bg-dark p-3 rounded border-1" style="border: 1px solid #495057;">
+                                <label class="text-muted small mb-2">Patient</label>
+                                {% if patient %}
+                                    <p class="mb-1 text-white"><strong>{{ patient.prenom }} {{ patient.nom }}</strong></p>
+                                    <p class="text-muted small">{{ patient.email }}</p>
+                                {% else %}
+                                    <p class="text-danger">ID: {{ reservation.idPatient }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="bg-dark p-3 rounded border-1" style="border: 1px solid #495057;">
+                                <label class="text-muted small mb-2">Psychologue</label>
+                                {% if psychologue %}
+                                    <p class="mb-1 text-white"><strong>Dr. {{ psychologue.prenom }} {{ psychologue.nom }}</strong></p>
+                                    <p class="text-muted small">{{ psychologue.email }}</p>
+                                {% else %}
+                                    <p class="text-danger">ID: {{ reservation.idPsychologue }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {{ include('reservation_back/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+
+                    <hr class="my-4" style="border-color: #495057;">
+
+                    <div class="mt-3">
+                        {{ include('reservation_back/_delete_form.html.twig') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

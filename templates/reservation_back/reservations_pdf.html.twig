@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport Réservations - PsyDesk</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .page {
+            background-color: #fff;
+            padding: 40px;
+            page-break-after: always;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #667eea;
+            text-shadow: 1px 1px 1px #ccc;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        .generated-date {
+            text-align: right;
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 20px;
+        }
+
+        .summary-grid {
+            display: table;
+            width: 100%;
+            margin-bottom: 30px;
+            border-spacing: 15px;
+            border-collapse: separate;
+        }
+
+        .summary-row {
+            display: table-row;
+        }
+
+        .summary-box {
+            display: table-cell;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            text-align: center;
+            width: 25%;
+            vertical-align: middle;
+        }
+
+        .summary-box.pending {
+            border-left-color: #f59e0b;
+        }
+
+        .summary-box.confirmed {
+            border-left-color: #10b981;
+        }
+
+        .summary-box.cancelled {
+            border-left-color: #ef4444;
+        }
+
+        .summary-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            color: #33f;
+            text-shadow: 1px 1px 1px #ccc;
+            font-size: 24px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 12px;
+        }
+
+        th {
+            background-color: #f0f0f0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f0f0f0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .patient-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .patient-email {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .doctor-name {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .date-time {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #888;
+            font-size: 12px;
+            border-top: 2px solid #ddd;
+            padding-top: 15px;
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="generated-date">
+            Généré le: {{ 'now'|date('d/m/Y à H:i:s') }}
+        </div>
+
+        <h1>🧠 PsyDesk</h1>
+        <div class="subtitle">Rapport Complet des Réservations</div>
+
+        <!-- Statistics Summary -->
+        {% if reservations|length > 0 %}
+            {% set total = reservations|length %}
+            {% set pending = 0 %}
+            {% set confirmed = 0 %}
+            {% set cancelled = 0 %}
+
+            {% for res in reservations %}
+                {% if res.status == 'en attente' %}
+                    {% set pending = pending + 1 %}
+                {% elseif res.status == 'confirmé' %}
+                    {% set confirmed = confirmed + 1 %}
+                {% elseif res.status == 'annulé' %}
+                    {% set cancelled = cancelled + 1 %}
+                {% endif %}
+            {% endfor %}
+
+            <div class="summary-grid">
+                <div class="summary-row">
+                    <div class="summary-box">
+                        <div class="summary-value">{{ total }}</div>
+                        <div class="summary-label">Total</div>
+                    </div>
+                    <div class="summary-box pending">
+                        <div class="summary-value" style="color: #f59e0b;">{{ pending }}</div>
+                        <div class="summary-label">En Attente</div>
+                    </div>
+                    <div class="summary-box confirmed">
+                        <div class="summary-value" style="color: #10b981;">{{ confirmed }}</div>
+                        <div class="summary-label">Confirmées</div>
+                    </div>
+                    <div class="summary-box cancelled">
+                        <div class="summary-value" style="color: #ef4444;">{{ cancelled }}</div>
+                        <div class="summary-label">Annulées</div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Reservations Table -->
+        <h2>📋 Liste des Réservations</h2>
+
+        {% if reservations|length > 0 %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Email</th>
+                        <th>Psychologue</th>
+                        <th>Date/Heure</th>
+                        <th>Disponibilité</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reservation in reservations %}
+                        <tr>
+                            <td>
+                                {% if reservation.patient %}
+                                    <div class="patient-name">{{ reservation.patient.prenom }} {{ reservation.patient.nom }}</div>
+                                {% else %}
+                                    <span style="color: #999;">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if reservation.patient %}
+                                    <div class="patient-email">{{ reservation.patient.email }}</div>
+                                {% else %}
+                                    <span style="color: #999;">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if reservation.psychologue %}
+                                    <div class="doctor-name">Dr. {{ reservation.psychologue.prenom }} {{ reservation.psychologue.nom }}</div>
+                                {% else %}
+                                    <span style="color: #999;">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td class="date-time">
+                                {% if reservation.datePrevue %}
+                                    {{ reservation.datePrevue|date('d/m/Y H:i') }}
+                                {% else %}
+                                    <span style="color: #999;">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="date-time">
+                                {% if reservation.dateDispo %}
+                                    {{ reservation.dateDispo|date('d/m/Y H:i') }}
+                                {% else %}
+                                    <span style="color: #999;">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if reservation.status == 'en attente' %}
+                                    <span class="badge badge-pending">⏳ En Attente</span>
+                                {% elseif reservation.status == 'confirmé' %}
+                                    <span class="badge badge-confirmed">✅ Confirmée</span>
+                                {% elseif reservation.status == 'annulé' %}
+                                    <span class="badge badge-cancelled">❌ Annulée</span>
+                                {% else %}
+                                    <span class="badge">{{ reservation.status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="no-data">
+                Aucune réservation disponible
+            </div>
+        {% endif %}
+
+        <div class="footer">
+            <p>Ce document est confidentiel et réservé aux professionnels de santé autorisés.</p>
+            <p>&copy; 2026 PsyDesk - Tous droits réservés</p>
+            <p>Plateforme de gestion pour psychologues et patients</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,278 @@
+{% extends 'base1.html.twig' %}
+
+{% block title %}Vue Calendrier — Réservations — PsyDesk{% endblock %}
+
+{% block page_title %}📅 Calendrier des Réservations{% endblock %}
+{% block page_subtitle %}Vos réservations basées sur votre planning de travail{% endblock %}
+
+{% block stylesheets %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.0/main.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.0/locales/fr.global.js" rel="stylesheet">
+
+<style>
+    :root {
+        --primary: #667eea;
+        --dark-bg: #1a1a2e;
+        --card-bg: #16213e;
+        --text-light: #eaeaea;
+        --border-color: #0f3460;
+    }
+
+    .fc {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .fc-theme-standard .fc-scrollgrid {
+        border-color: var(--border-color);
+    }
+
+    .fc-button-primary {
+        background-color: var(--primary) !important;
+        border-color: var(--primary) !important;
+    }
+
+    .fc-button-primary:hover {
+        background-color: #5568d3 !important;
+    }
+
+    .fc-button-primary.fc-button-active {
+        background-color: #764ba2 !important;
+        border-color: #764ba2 !important;
+    }
+
+    #calendar {
+        background: var(--card-bg);
+        border-radius: 8px;
+        padding: 20px;
+        border: 1px solid var(--border-color);
+    }
+
+    .fc-toolbar-title {
+        color: var(--text-light) !important;
+        font-size: 1.5rem !important;
+    }
+
+    .fc-col-header-cell {
+        background-color: var(--border-color) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-light) !important;
+        font-weight: 600;
+    }
+
+    .fc-daygrid-day {
+        background-color: var(--dark-bg) !important;
+        border-color: var(--border-color) !important;
+    }
+
+    .fc-daygrid-day-number {
+        color: var(--text-light) !important;
+    }
+
+    .fc-daygrid-day.fc-day-other {
+        background-color: rgba(15, 52, 96, 0.3) !important;
+    }
+
+    .fc-daygrid-day.fc-day-other .fc-daygrid-day-number {
+        color: rgba(234, 234, 234, 0.3) !important;
+    }
+
+    /* EVENT STYLING - CRITICAL */
+    .fc-event {
+        border: none !important;
+        padding: 4px 6px !important;
+        font-weight: 600 !important;
+    }
+
+    .fc-event-title {
+        font-weight: 600 !important;
+        padding: 2px 3px !important;
+    }
+
+    /* Day/Time grid */
+    .fc-timegrid-slot {
+        height: 2em;
+    }
+
+    .fc-col-time {
+        color: var(--text-light) !important;
+    }
+
+    .fc-timegrid-cell {
+        border-color: var(--border-color) !important;
+        background-color: var(--dark-bg) !important;
+    }
+
+    .fc-daytime {
+        background-color: var(--dark-bg) !important;
+    }
+
+    .calendar-wrapper {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0;
+    }
+
+    .calendar-legend {
+        display: flex;
+        gap: 30px;
+        margin-top: 20px;
+        padding: 15px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        flex-wrap: wrap;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-light);
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 3px;
+        border: 2px solid;
+    }
+
+    .calendar-actions {
+        text-align: right;
+        margin-top: 20px;
+    }
+
+    .alert {
+        background: rgba(102, 126, 234, 0.1) !important;
+        border: 1px solid var(--primary) !important;
+        color: var(--text-light) !important;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+
+<div class="calendar-wrapper">
+
+    {% if reservations|length == 0 %}
+        <div class="alert alert-warning" role="alert" style="margin-bottom: 20px;">
+            <i class="mdi mdi-alert-circle me-2"></i>
+            <strong>Aucune réservation trouvée.</strong>
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert" style="margin-bottom: 20px;">
+            <i class="mdi mdi-information me-2"></i>
+            Affichage de <strong>{{ reservations|length }}</strong> réservation(s).
+        </div>
+    {% endif %}
+
+    <div id='calendar'></div>
+
+    <div class="calendar-legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #f59e0b; border-color: #d97706;"></div>
+            <span>⧖ En attente</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #10b981; border-color: #059669;"></div>
+            <span>✓ Confirmée</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background-color: #ef4444; border-color: #dc2626;"></div>
+            <span>✗ Annulée</span>
+        </div>
+    </div>
+
+    <div class="calendar-actions">
+        <a href="{{ path('app_reservation_back_index') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="mdi mdi-arrow-left me-2"></i>Retour à la liste
+        </a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.0/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.0/locales/fr.global.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🎯 Calendrier en cours d\'initialisation...');
+
+        var calendarEl = document.getElementById('calendar');
+
+        // Build events array
+        var events = [];
+
+        {% for reservation in reservations %}
+            {% if reservation.datePrevue %}
+                var bgColor = '#f59e0b'; // pending yellow
+                var borderColor = '#d97706';
+                var textColor = '#000';
+
+                {% if reservation.status == 'confirmé' %}
+                    bgColor = '#10b981'; // confirmed green
+                    borderColor = '#059669';
+                    textColor = '#fff';
+                {% elseif reservation.status == 'annulé' %}
+                    bgColor = '#ef4444'; // cancelled red
+                    borderColor = '#dc2626';
+                    textColor = '#fff';
+                {% endif %}
+
+                events.push({
+                    title: '{{ reservation.patient.prenom }} {{ reservation.patient.nom }}',
+                    start: "{{ reservation.datePrevue|date('Y-m-d\\TH:i:s') }}",
+                    end: "{{ reservation.datePrevue|date_modify('+30 minutes')|date('Y-m-d\\TH:i:s') }}",
+                    backgroundColor: bgColor,
+                    borderColor: borderColor,
+                    textColor: textColor,
+                    url: '{{ path('app_reservation_back_show', {'id': reservation.id}) }}',
+                    extendedProps: {
+                        status: '{{ reservation.status }}'
+                    }
+                });
+            {% endif %}
+        {% endfor %}
+
+        console.log('📋 Nombre total d\'événements:', events.length);
+        console.log('📌 Événements:', events);
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'fr',
+            initialView: 'dayGridMonth',
+            initialDate: '{{ reservations|length > 0 ? reservations[0].datePrevue|date('Y-m-d') : 'now' }}',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            buttonText: {
+                today: 'Aujourd\'hui',
+                month: 'Mois',
+                week: 'Semaine',
+                day: 'Jour'
+            },
+            height: 'auto',
+            contentHeight: 'auto',
+            slotMinTime: '06:00:00',
+            slotMaxTime: '22:00:00',
+            slotDuration: '00:30:00',
+            slotLabelInterval: '00:30',
+            eventTimeFormat: {
+                hour: '2-digit',
+                minute: '2-digit',
+                meridiem: 'short'
+            },
+            events: events,
+            eventClick: function(info) {
+                console.log('✅ Événement cliqué:', info.event.title, info.event.url);
+                if (info.event.url) {
+                    window.location.href = info.event.url;
+                }
+            }
+        });
+
+        calendar.render();
+        console.log('✨ Calendrier rendu avec succès');
+    });
+</script>
+
+{% endblock %}

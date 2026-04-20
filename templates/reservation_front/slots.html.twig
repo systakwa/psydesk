@@ -1,0 +1,126 @@
+{% extends 'base_front.html.twig' %}
+{% block title %}Créneaux — Dr. {{ psychologue.prenom }} {{ psychologue.nom }} — PsyDesk{% endblock %}
+
+{% block extra_styles %}
+.slot-btn {
+    display: block;
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    padding: 14px 10px;
+    text-align: center;
+    text-decoration: none;
+    color: #212529;
+    background: #fff;
+    font-weight: 600;
+    font-size: 1.05rem;
+    transition: all .18s ease;
+    line-height: 1.2;
+}
+.slot-btn:hover {
+    border-color: #0d6efd;
+    background: #e7f0ff;
+    color: #0d6efd;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(13,110,253,.15);
+    text-decoration: none;
+}
+.slot-btn .slot-label {
+    display: block;
+    font-size: .65rem;
+    font-weight: 500;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-top: 3px;
+}
+.slot-btn:hover .slot-label { color: #0d6efd; }
+{% endblock %}
+
+{% block page_hero %}
+<section class="py-4 bg-white border-bottom">
+    <div class="container px-5">
+        <a href="{{ path('app_reservation_front_dates', {'id': psychologue.id}) }}"
+           class="btn btn-sm btn-outline-secondary mb-3">
+            <i class="bi bi-arrow-left me-1"></i>Retour aux mois
+        </a>
+        <div class="d-flex align-items-center gap-4">
+            <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#0d6efd,#6610f2);
+                        display:flex;align-items:center;justify-content:center;
+                        font-size:22px;font-weight:700;color:#fff;flex-shrink:0;">
+                {{ psychologue.prenom|first|upper }}{{ psychologue.nom|first|upper }}
+            </div>
+            <div>
+                <h1 class="h3 fw-bolder mb-0">Dr. {{ psychologue.prenom }} {{ psychologue.nom }}</h1>
+                <p class="text-muted small mb-0">
+                    <i class="bi bi-calendar-event me-1"></i>{{ selectedDate|date('l d F Y')|capitalize }}
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block body %}
+<section class="py-5">
+    <div class="container px-5">
+
+        {% if slots|length == 0 %}
+            <div class="card border-0 shadow rounded-4 text-center py-5">
+                <div class="card-body">
+                    <div class="display-1 mb-3">📅</div>
+                    <h4 class="fw-bolder">Aucun créneau disponible</h4>
+                    <p class="text-muted">Ce psychologue n'a pas de créneau libre pour cette date.</p>
+                    <a href="{{ path('app_reservation_front_dates', {'id': psychologue.id}) }}" class="btn btn-primary mt-2">
+                        <i class="bi bi-arrow-left me-1"></i>Choisir une autre date
+                    </a>
+                </div>
+            </div>
+
+        {% else %}
+            <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden" style="border-left: 4px solid #0d6efd;">
+                <div class="card-header bg-light border-0 px-4 py-3 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-calendar-date text-primary fs-5"></i>
+                        <span class="fw-bolder">
+                            {{ selectedDate|date('l d F Y')|capitalize }}
+                        </span>
+                    </div>
+                    <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold">
+                        {{ slots|length }} créneau{{ slots|length > 1 ? 'x' : '' }}
+                    </span>
+                </div>
+                <div class="card-body px-4 py-4">
+                    <p class="small text-muted fw-semibold text-uppercase mb-4" style="letter-spacing:1px;">
+                        Sélectionnez un créneau
+                    </p>
+                    <div class="row row-cols-3 row-cols-sm-4 row-cols-md-5 row-cols-lg-6 g-3">
+                        {% for slot in slots %}
+                            {% set slotDateTime = slot|date('Y-m-d-H-i') %}
+                            <div class="col">
+                                <a href="{{ path('app_reservation_front_book', {'psychologueId': psychologue.id, 'slotDateTime': slotDateTime}) }}"
+                                   class="slot-btn">
+                                    {{ slot|date('H:i') }}
+                                    <span class="slot-label">Libre</span>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}
+
+{% block cta_section %}
+<section class="py-5 bg-gradient-primary-to-secondary text-white">
+    <div class="container px-5 text-center">
+        <h2 class="display-6 fw-bolder mb-3">Déjà un rendez-vous ?</h2>
+        <a class="btn btn-outline-light btn-lg px-5 py-3 fs-6 fw-bolder"
+           href="{{ path('app_reservation_front_my_reservations') }}">
+            <i class="bi bi-list-check me-2"></i>Voir mes réservations
+        </a>
+    </div>
+</section>
+{% endblock %}

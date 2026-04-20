@@ -1,0 +1,67 @@
+<div class="table-responsive">
+    <table class="table table-sm table-hover">
+        <thead>
+            <tr>
+                <th>Patient</th>
+                <th>Psychologue</th>
+                <th>Réservation</th>
+                <th>Date</th>
+                <th>Aperçu</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for fiche in fiches %}
+            <tr>
+                <td>
+                    {% if ficheData[fiche.id].patient %}
+                        <div style="font-weight: 600;">{{ ficheData[fiche.id].patient.prenom }} {{ ficheData[fiche.id].patient.nom }}</div>
+                        <small class="text-muted">{{ ficheData[fiche.id].patient.email }}</small>
+                    {% else %}
+                        <small class="text-danger">ID: {{ fiche.idPatient }}</small>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if ficheData[fiche.id].psychologue %}
+                        <div style="font-weight: 600;">Dr. {{ ficheData[fiche.id].psychologue.prenom }} {{ ficheData[fiche.id].psychologue.nom }}</div>
+                        <small class="text-muted">{{ ficheData[fiche.id].psychologue.email }}</small>
+                    {% else %}
+                        <small class="text-danger">ID: {{ fiche.idPsychologue }}</small>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if ficheData[fiche.id].reservation %}
+                        <div style="font-weight: 600;">Res. #{{ ficheData[fiche.id].reservation.id }}</div>
+                        <small class="text-muted">{{ ficheData[fiche.id].reservation.datePrevue|date('d/m/Y H:i') }}</small>
+                    {% else %}
+                        <small class="text-danger">ID: {{ fiche.idReservation }}</small>
+                    {% endif %}
+                </td>
+                <td>{{ fiche.date ? fiche.date|date('d/m/Y') : '—' }}</td>
+                <td>
+                    <small class="text-muted">{{ fiche.texteFiche|slice(0, 40) }}{{ fiche.texteFiche|length > 40 ? '...' : '' }}</small>
+                </td>
+                <td>
+                    <a href="{{ path('app_fiche_back_show', {'id': fiche.id}) }}"
+                       class="btn btn-sm btn-outline-info">
+                        <i class="bi bi-eye"></i> Voir
+                    </a>
+                    <a href="{{ path('app_fiche_back_edit', {'id': fiche.id}) }}"
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil"></i> Modifier
+                    </a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">Aucune fiche trouvée.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+<div class="mt-4">
+    {{ knp_pagination_render(fiches) }}
+</div>

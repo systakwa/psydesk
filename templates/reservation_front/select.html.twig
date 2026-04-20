@@ -1,0 +1,431 @@
+{% extends 'base_front.html.twig' %}
+
+{% block title %}Sélectionner un créneau - PsyDesk{% endblock %}
+
+{% block page_hero %}
+<section class="py-4 bg-gradient-primary-to-secondary text-white">
+    <div class="container px-5">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="display-6 fw-bolder mb-2">Réserver avec Dr. {{ psychologue.prenom }} {{ psychologue.nom }}</h1>
+                <p class="lead mb-0 opacity-75">{{ psychologue.email }}</p>
+            </div>
+            <a href="{{ path('app_reservation_front_index') }}" class="btn btn-outline-light">
+                ← Retour
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block body %}
+<section class="py-5">
+    <div class="container px-5">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-0 shadow rounded-4">
+                    <div class="card-body p-5">
+
+                        {# Step 1: Month Selection #}
+                        <div class="step-heading step1">Étape 1 : Choisissez un mois</div>
+                        <select id="monthSelect" class="form-select form-select-lg w-100"
+                                data-psychologue-id="{{ psychologue.id }}"
+                                data-plannings="{{ plannings|json_encode }}"
+                                data-reserved-times="{{ reservedTimes|json_encode }}">
+                            <option value="">-- Sélectionner un mois --</option>
+                            {% for month in months %}
+                            <option value="{{ month.combined }}">
+                                {{ month.label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+
+                        <div class="divider"></div>
+
+                        {# Step 2: Day Selection #}
+                        <div id="dayStep" style="display: none;">
+                            <div class="step-heading step2">Étape 2 : Choisissez un jour</div>
+                            <div class="days-grid" id="daySelect"></div>
+                        </div>
+
+                        <div class="divider" id="daySlotDivider" style="display: none;"></div>
+
+                        {# Step 3: Slot Selection #}
+                        <div id="slotStep" style="display: none;">
+                            <div class="step-heading step3">Étape 3 : Choisissez un créneau</div>
+                            <div class="slots-grid" id="slotSelect"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+/* ── Month Selector ── */
+.form-select-lg {
+    font-size: 1rem;
+    padding: 0.875rem 1rem;
+    border-radius: 0.5rem;
+}
+
+/* ── Section Headings ── */
+.step-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: #212529;
+}
+
+.step-heading::before {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.375rem;
+    background-color: #0d6efd;
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.step1::before { content: '📅'; background-color: transparent; }
+.step2::before { content: '📆'; background-color: transparent; }
+.step3::before { content: '🕐'; background-color: transparent; }
+
+.divider {
+    height: 1px;
+    background-color: #dee2e6;
+    margin: 2rem 0;
+}
+
+/* ── Days Grid ── */
+.days-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.day-btn {
+    background-color: #f8f9fa;
+    border: 2px solid #dee2e6;
+    color: #212529;
+    padding: 1.25rem 0.75rem;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.day-btn:hover {
+    background-color: #e7f1ff;
+    border-color: #0d6efd;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(13, 110, 253, 0.12);
+}
+
+.day-btn.selected {
+    background: linear-gradient(135deg, #0d6efd 0%, #0099ff 100%);
+    border-color: #0d6efd;
+    color: white;
+    box-shadow: 0 8px 20px rgba(13, 110, 253, 0.3);
+}
+
+.day-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    text-transform: capitalize;
+}
+
+.day-num {
+    font-size: 1.6rem;
+    font-weight: 300;
+    letter-spacing: -1px;
+}
+
+/* ── Time Slots Grid ── */
+.slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 0.875rem;
+}
+
+.time-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    min-height: 100px;
+    border-radius: 0.5rem;
+    border: 2px solid #dee2e6;
+    background-color: #f8f9fa;
+    color: #212529;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-align: center;
+}
+
+.time-slot.available {
+    border-color: #27ae60;
+    background-color: #f0fef6;
+    color: #27ae60;
+}
+
+.time-slot.available:hover {
+    background-color: #27ae60;
+    border-color: #27ae60;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(39, 174, 96, 0.2);
+}
+
+.time-slot.reserved {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    color: #999;
+    cursor: not-allowed;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.time-slot-time {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.time-slot-status {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.time-slot-status-icon {
+    font-size: 0.9rem;
+}
+
+/* ── Empty State ── */
+.alert {
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+}
+
+@media (max-width: 768px) {
+    .days-grid {
+        grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+    }
+
+    .slots-grid {
+        grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+    }
+}
+
+@media (max-width: 576px) {
+    .days-grid {
+        grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .slots-grid {
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .day-num {
+        font-size: 1.4rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+const frenchDays = {0: 'Dimanche', 1: 'Lundi', 2: 'Mardi', 3: 'Mercredi', 4: 'Jeudi', 5: 'Vendredi', 6: 'Samedi'};
+const dayToNum = {'lundi': 1, 'mardi': 2, 'mercredi': 3, 'jeudi': 4, 'vendredi': 5, 'samedi': 6, 'dimanche': 0};
+
+const monthSelect = document.getElementById('monthSelect');
+const psychologueId = monthSelect.getAttribute('data-psychologue-id');
+const planningsData = JSON.parse(monthSelect.getAttribute('data-plannings'));
+const reservedTimesData = JSON.parse(monthSelect.getAttribute('data-reserved-times'));
+
+console.log('Month selector initialized');
+console.log('Psychologue ID:', psychologueId);
+console.log('Plannings:', planningsData);
+planningsData.forEach(p => {
+    console.log('  - ' + p.jour + ': ' + p.heureDebut + ' → ' + p.heureFin + ', break: ' + (p.pauseDebut || 'none'));
+});
+
+function showAvailableDays(year, month) {
+    console.log('Showing days for:', year, month);
+
+    if (!planningsData || planningsData.length === 0) {
+        document.getElementById('daySelect').innerHTML = '<div class="col-12"><div class="alert alert-danger">Aucun planning pour ce psychologue</div></div>';
+        document.getElementById('dayStep').style.display = 'block';
+        return;
+    }
+
+    const monthDate = new Date(year, month - 1, 1);
+    const endOfMonth = new Date(year, month, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Find available day numbers from planning
+    const availableDayNums = new Set();
+    planningsData.forEach(planning => {
+        const dayName = planning.jour.toLowerCase().trim();
+        const dayNum = dayToNum[dayName];
+        console.log('Planning day:', dayName, '→ dayNum:', dayNum);
+        if (dayNum !== undefined) {
+            availableDayNums.add(dayNum);
+        }
+    });
+
+    console.log('Available days (0=Sun, 1=Mon, ..., 6=Sat):', Array.from(availableDayNums));
+
+    // Generate dates in this month
+    const availableDays = [];
+    let current = new Date(monthDate);
+    while (current <= endOfMonth) {
+        const dayOfWeek = current.getDay();
+        const hasPlanning = availableDayNums.has(dayOfWeek);
+        const isNotPast = current >= today;
+        if (hasPlanning && isNotPast) {
+            console.log('Adding day:', current.toLocaleDateString(), '(', frenchDays[dayOfWeek], ')');
+            availableDays.push(new Date(current));
+        }
+        current.setDate(current.getDate() + 1);
+    }
+
+    const dayContainer = document.getElementById('daySelect');
+    dayContainer.innerHTML = '';
+
+    if (availableDays.length === 0) {
+        dayContainer.innerHTML = '<div class="col-12"><div class="alert alert-warning">Aucun jour disponible ce mois</div></div>';
+        document.getElementById('dayStep').style.display = 'block';
+        return;
+    }
+
+    availableDays.forEach(date => {
+        const dateStr = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+        const dayNum = date.getDate();
+        const dayName = frenchDays[date.getDay()];
+
+        console.log('Day available:', dayName, dayNum, 'dateStr:', dateStr);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'day-btn';
+        btn.dataset.date = dateStr;
+        btn.innerHTML = `<div class="day-name">${dayName}</div><div class="day-num">${dayNum}</div>`;
+
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+            console.log('Clicked day:', this.dataset.date);
+            loadSlots(this.dataset.date);
+        });
+
+        dayContainer.appendChild(btn);
+    });
+
+    document.getElementById('dayStep').style.display = 'block';
+    document.getElementById('slotStep').style.display = 'none';
+}
+
+function loadSlots(dateStr) {
+    console.log('=== Loading slots for:', dateStr);
+    console.log('URL:', `/reservation/front/psychologue/${psychologueId}/slots/${dateStr}`);
+
+    fetch(`/reservation/front/psychologue/${psychologueId}/slots/${dateStr}`)
+        .then(r => {
+            console.log('Response status:', r.status);
+            return r.json();
+        })
+        .then(slots => {
+            console.log('Slots received:', slots.length, 'slots');
+            slots.forEach((s, i) => {
+                if (i < 5) console.log('  -', s.time, s.isReserved ? 'RESERVED' : (s.isPast ? 'PAST' : 'AVAILABLE'));
+            });
+            const slotContainer = document.getElementById('slotSelect');
+            slotContainer.innerHTML = '';
+
+            if (!slots || slots.length === 0) {
+                slotContainer.innerHTML = '<div class="alert alert-warning">Aucun créneau ce jour</div>';
+            } else {
+                slots.forEach(slot => {
+                    const link = document.createElement('a');
+                    link.href = `/reservation/front/book/${psychologueId}/${slot.dateTime}`;
+
+                    let statusClass = 'available';
+                    let statusText = '<span class="time-slot-status-icon">✓</span> Disponible';
+
+                    if (slot.isPast) {
+                        statusClass = 'reserved';
+                        statusText = '<span class="time-slot-status-icon">⏱</span> Passé';
+                    } else if (slot.isReserved) {
+                        statusClass = 'reserved';
+                        statusText = '<span class="time-slot-status-icon">✕</span> Réservé';
+                    }
+
+                    link.className = `time-slot ${statusClass}`;
+
+                    const timeEl = document.createElement('span');
+                    timeEl.className = 'time-slot-time';
+                    timeEl.textContent = slot.time;
+
+                    const statusEl = document.createElement('span');
+                    statusEl.className = 'time-slot-status';
+                    statusEl.innerHTML = statusText;
+
+                    link.appendChild(timeEl);
+                    link.appendChild(statusEl);
+
+                    if (slot.isReserved || slot.isPast) {
+                        link.style.pointerEvents = 'none';
+                    }
+
+                    slotContainer.appendChild(link);
+                });
+            }
+
+            document.getElementById('daySlotDivider').style.display = 'block';
+            document.getElementById('slotStep').style.display = 'block';
+            document.getElementById('slotSelect').scrollIntoView({ behavior: 'smooth' });
+        })
+        .catch(e => {
+            console.error('Fetch error:', e);
+            document.getElementById('slotSelect').innerHTML = '<div class="col-12"><div class="alert alert-danger">Erreur chargement créneaux</div></div>';
+        });
+}
+
+monthSelect.addEventListener('change', function() {
+    console.log('Month selected:', this.value);
+
+    if (!this.value) return;
+
+    const [year, month] = this.value.split('-');
+    showAvailableDays(parseInt(year), parseInt(month));
+});
+</script>
+{% endblock %}

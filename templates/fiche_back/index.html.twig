@@ -1,0 +1,106 @@
+{% extends 'base1.html.twig' %}
+
+{% block title %}PsyDesk Admin - Fiches{% endblock %}
+
+{% block page_title %}Gestion des fiches{% endblock %}
+{% block page_subtitle %}Consultez et gérez toutes les fiches des séances.{% endblock %}
+
+{% block page_header_action %}
+    <a href="{{ path('app_fiche_back_new') }}" class="btn btn-sm btn-primary">
+        + Nouvelle fiche
+    </a>
+{% endblock %}
+
+{% block body %}
+    <h4 class="card-title">Liste des fiches</h4>
+
+    <!-- Search Bar -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="POST" id="searchForm">
+                <input type="text" id="ficheSearch" name="search" class="form-control" placeholder="Rechercher par nom, prénom ou email..." value="{{ search }}">
+            </form>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table table-sm table-hover">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Psychologue</th>
+                    <th>Réservation</th>
+                    <th>Date</th>
+                    <th>Aperçu</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="ficheList">
+            {% for fiche in fiches %}
+                <tr class="fiche-row">
+                    <td>
+                        {% if ficheData[fiche.id].patient %}
+                            <div style="font-weight: 600;">{{ ficheData[fiche.id].patient.prenom }} {{ ficheData[fiche.id].patient.nom }}</div>
+                            <small class="text-muted">{{ ficheData[fiche.id].patient.email }}</small>
+                        {% else %}
+                            <small class="text-danger">ID: {{ fiche.idPatient }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if ficheData[fiche.id].psychologue %}
+                            <div style="font-weight: 600;">Dr. {{ ficheData[fiche.id].psychologue.prenom }} {{ ficheData[fiche.id].psychologue.nom }}</div>
+                            <small class="text-muted">{{ ficheData[fiche.id].psychologue.email }}</small>
+                        {% else %}
+                            <small class="text-danger">ID: {{ fiche.idPsychologue }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if ficheData[fiche.id].reservation %}
+                            <div style="font-weight: 600;">Res. #{{ ficheData[fiche.id].reservation.id }}</div>
+                            <small class="text-muted">{{ ficheData[fiche.id].reservation.datePrevue|date('d/m/Y H:i') }}</small>
+                        {% else %}
+                            <small class="text-danger">ID: {{ fiche.idReservation }}</small>
+                        {% endif %}
+                    </td>
+                    <td>{{ fiche.date ? fiche.date|date('d/m/Y') : '—' }}</td>
+                    <td>
+                        <small class="text-muted">{{ fiche.texteFiche|slice(0, 40) }}{{ fiche.texteFiche|length > 40 ? '...' : '' }}</small>
+                    </td>
+                    <td>
+                        <a href="{{ path('app_fiche_back_show', {'id': fiche.id}) }}"
+                           class="btn btn-sm btn-outline-info">
+                            <i class="bi bi-eye"></i> Voir
+                        </a>
+                        <a href="{{ path('app_fiche_back_edit', {'id': fiche.id}) }}"
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i> Modifier
+                        </a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Aucune fiche trouvée.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-4">
+        {{ knp_pagination_render(fiches) }}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        $("#ficheSearch").on("keyup", function() {
+            var searchQuery = $(this).val().toLowerCase();
+            $(".fiche-row").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(searchQuery) > -1);
+            });
+        });
+    });
+    </script>
+{% endblock %}

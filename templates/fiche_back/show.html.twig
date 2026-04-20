@@ -1,0 +1,77 @@
+{% extends 'base1.html.twig' %}
+
+{% block title %}PsyDesk Admin - Détail fiche{% endblock %}
+
+{% block page_title %}Détail de la fiche{% endblock %}
+{% block page_subtitle %}Informations complètes de la fiche{% endblock %}
+
+{% block page_header_action %}
+    <div class="d-flex gap-2">
+        <a href="{{ path('app_fiche_back_index') }}" class="btn btn-sm btn-secondary">
+            ← Retour
+        </a>
+        <a href="{{ path('app_fiche_back_edit', {'id': fiche.id}) }}" class="btn btn-sm btn-primary">
+            Modifier
+        </a>
+    </div>
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <div class="info-section">
+                        <h5 class="mb-3 text-white">Informations patient</h5>
+                        <div class="bg-dark p-3 rounded mb-4 border-1" style="border: 1px solid #495057;">
+                            {% if patient %}
+                                <p class="mb-1 text-light"><strong>Nom :</strong> {{ patient.prenom }} {{ patient.nom }}</p>
+                                <p class="mb-0 text-light"><strong>Email :</strong> {{ patient.email }}</p>
+                            {% else %}
+                                <p class="mb-0 text-light"><strong>Patient ID :</strong> {{ fiche.idPatient }}</p>
+                            {% endif %}
+                        </div>
+
+                        <h5 class="mb-3 text-white">Informations psychologue</h5>
+                        <div class="bg-dark p-3 rounded mb-4 border-1" style="border: 1px solid #495057;">
+                            {% if psychologue %}
+                                <p class="mb-1 text-light"><strong>Nom :</strong> Dr. {{ psychologue.prenom }} {{ psychologue.nom }}</p>
+                                <p class="mb-0 text-light"><strong>Email :</strong> {{ psychologue.email }}</p>
+                            {% else %}
+                                <p class="mb-0 text-light"><strong>Psychologue ID :</strong> {{ fiche.idPsychologue }}</p>
+                            {% endif %}
+                        </div>
+
+                        <h5 class="mb-3 text-white">Réservation associée</h5>
+                        <div class="bg-dark p-3 rounded mb-4 border-1" style="border: 1px solid #495057;">
+                            {% if reservation %}
+                                <p class="mb-1 text-light"><strong>📅 Date :</strong> {{ reservation.datePrevue ? reservation.datePrevue|date('d/m/Y H:i') : 'Non définie' }}</p>
+                                <p class="mb-0 text-light"><strong>Status :</strong> <span style="color: #ffc107;">{{ reservation.status|upper }}</span></p>
+                            {% else %}
+                                <p class="mb-0 text-light text-muted">Aucune réservation associée</p>
+                            {% endif %}
+                        </div>
+
+                        <h5 class="mb-3 text-white">Date de création</h5>
+                        <div class="bg-dark p-3 rounded mb-4 border-1" style="border: 1px solid #495057;">
+                            <p class="mb-0 text-light">
+                                <strong>📅 Date :</strong>
+                                <span style="color: #17a2b8;">{{ fiche.date ? fiche.date|date('d/m/Y H:i') : 'Non définie' }}</span>
+                            </p>
+                        </div>
+
+                        <h5 class="mb-3 text-white">Contenu de la fiche</h5>
+                        <div class="bg-dark p-3 rounded mb-4 border-1" style="border: 1px solid #495057; min-height: 150px;">
+                            <p class="text-light" style="white-space: pre-wrap;">{{ fiche.texteFiche ? fiche.texteFiche : 'Aucun contenu' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-4 border-1" style="border: 1px solid #0d6efd; background-color: rgba(13, 110, 253, 0.1); color: #0d6efd;">
+                        <i class="mdi mdi-information-outline"></i>
+                        Pour modifier cette fiche, cliquez sur le bouton "Modifier" ci-dessus.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

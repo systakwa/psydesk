@@ -1,0 +1,26 @@
+{% extends 'base1.html.twig' %}
+
+{% block title %}PsyDesk Admin - Nouvelle fiche{% endblock %}
+
+{% block page_title %}Créer une nouvelle fiche{% endblock %}
+{% block page_subtitle %}Remplissez les informations pour créer une nouvelle fiche de séance.{% endblock %}
+
+{% block page_header_action %}
+    <a href="{{ path('app_fiche_back_index') }}" class="btn btn-sm btn-secondary">
+        ← Retour à la liste
+    </a>
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <h4 class="card-title mb-4 text-white">Nouvelle fiche</h4>
+
+                    {{ include('fiche_back/_form.html.twig', {'button_label': 'Créer'}) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
